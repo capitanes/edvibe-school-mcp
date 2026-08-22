@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# Local environment and secrets — NEVER commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local Postman / MCP client config that may contain secrets
+.postman/
+.mcp-local/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

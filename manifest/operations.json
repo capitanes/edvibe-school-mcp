@@ -1,0 +1,2977 @@
+{
+  "snapshot": {
+    "file": "swagger-2026-08-22.json",
+    "sha256": "68342121d2fd0d6f6f1cb86889ba316abaf8fe0fe2822ca91bace481c7286f9c",
+    "openapi": "3.0.4",
+    "info": {
+      "title": "CabinetApi.School.WebApi",
+      "description": "<p style=\"text-align: left;\">\n    &nbsp; &nbsp; &nbsp; Мы используем подход\n    <strong>\n        <em>\n            <a href=\"https://restfulapi.net/\">RESTFUL API</a>\n        </em>\n    </strong>, использующий\n    <strong>\n        <a href=\"https://www.json.org/json-ru.html\">JSON</a>\n    </strong> в качестве формата обмена данными. <br /><strong> JSON</strong> возвращается в результате каждого запроса, даже если запрос привел к ошибке. <br />\n    <br />\n    Url: https://{SchoolDomain}/school-api/{Endpoint}  где SchoolDomain - это домен школы а Endpoint - это относительный путь к методу апи из списка ниже. (например https://my-school.com/school-api/api/GroupClasses/GetList )\n    <br />\n    <br />\n    Для использования <strong>API</strong> необходимо передавать токен доступа в виде HTTP-заголовка при каждом запросе:\n</p>\n<p>\n    <span style=\"color: #800080;\">\n        <strong>Authorization: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX</strong>\n    </span>\n</p>\n<p>API может обработать <strong> не более 15 запросов в секунду </strong> от одного токена, при превышении лимита запросов - клиент получит сообщение об ошибке c кодом 429<em> (HTTP StatusCode 429 = Too Many Requests</em>).</p>\n<p>\n    Каждый ответ оборачивается в модель\n    <strong>\n        <em>BaseResponse</em>\n    </strong> с полями: <em>IsSuccess, ErrorMessage, StatusCode, Data</em> где:\n</p>\n<ul>\n    <li>\n        <strong>\n            <em>IsSuccess&nbsp; &nbsp; &nbsp; &nbsp; </em>\n        </strong>- (bool) истинно если АПИ успешно выполнило запрос;\n    </li>\n    <li>\n        <strong>\n            <em>ErrorMessage</em>\n        </strong>&nbsp; - (string) содержит сообщение об ошибке, в случае, когда запрос не может быть выполнен;\n    </li>\n    <li>\n        <strong>\n            <em>Status</em>\n        </strong>&nbsp; &nbsp; &nbsp; - (number) содержит в себе код ошибки;\n    </li>\n    <li>\n        <strong>\n            <em>Data</em>\n        </strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; - (object) содержит в себе данные ответа, в формате, возвращаемым методом.\n    </li>\n</ul>\n<hr />\n\n<!--\n    <h2 style=\"color: brown\">Запланированные изменения на 15.09.2022</h2>\n<ol>\n    <li>\n        <b>/api/LessonPackages/SetPackage</b>\n        <ul>\n            <li>get-параметр classId стал обязательным</li>\n            <li>post-параметр lessonPackageId и lessonPackageDurationId также сделали обязательными</li>\n        </ul>\n    </li>\n    <li>\n        <b>/api/Schedule/CreateLesson</b>\n        <ul>\n            <li>post-параметр  lessonDurationId обязателен для индивидуальных классов с балансовой системой</li>\n            <li>добавился обязательный post-параметр  durationMinutes</li>\n        </ul>\n    </li>\n</ol>\n-->\n\n\n\n<h3 style=\"color: brown\">Настройка сквозного входа в платформу</h3>\nСквозной вход подразумевает переход на платформу в нужный раздел, например в класс, пропуская этап ручной авторизации.\n<br />\n<br />\nДля этого нужно сделать:\n<ul>\n    <li>\n        С помощью методов апи <b>/api/UserAuth/LoginPupil</b> или <b>/api/UserAuth/LoginTeacher</b> можно создать токен авторизации для ученика или учителя соответственно.\n        <br />\n    </li>\n    <li>\n        Перевести ученика в платформу с помощью ссылки:\n        <br />\n        <b>\n            https://<i>{SchoolDomain}</i>/LoginByToken?token=<i>{UserAuthorizationToken}</i>&redirectUrl=<i>{RedirectUrl}</i>\n        </b>\n        <br />\n        <br />\n        Вместо <b>{SchoolDomain}</b> нужно подставить домен своей школы, вместо <b>{UserAuthorizationToken}</b> - токен полученный ранее в ответе на запрос в апи, а в <b>{RedirectUrl}</b> можно подставить любую ссылку в формате <u>\"url-encoded\"</u>.\n        <br />\n        Например если нужен переход в класс (нужно знать айди класса, который можно получить через апи), то пример бутет выглядеть так:\n        <br />\n        https://<i>{SchoolDomain}</i>/LoginByToken?token=<i>{UserAuthorizationToken}</i>&redirectUrl=https%3A%2F%2F{SchoolDomain}%2Fclassroom%2F{ClassId}\n        <br />\n        returnUrl здесь равен urlEncode(https://{SchoolDomain}/classroom/{ClassId})\n        <br />\n    </li>\n    <li>\n        После этого будет редирект на ссылку указанную в {RedirectUrl} без необходимости авторизоваться\n        <br />\n    </li>\n    <li>\n        Полученный токен в п.1 лучше сохранить где-то и в следующий раз можно вместо пункта 1 просто проверить статус токена методом <b>/api/UserAuth/CheckAuthToken</b> если он возвращает успех - то можно просто перейти к п.2 с тем же токеном (это будет быстрее и безопаснее)\n        <br />\n    </li>\n</ul>\n\n<br />\n\n<br />\n\n",
+      "contact": {
+        "name": "Support",
+        "email": "support@progressme.ru"
+      },
+      "version": "v1"
+    },
+    "servers": [
+      {
+        "url": "/school-api"
+      }
+    ]
+  },
+  "expectedCounts": {
+    "total": 78,
+    "read": 35,
+    "write": 24,
+    "high-risk": 17,
+    "sensitive": 2
+  },
+  "counts": {
+    "total": 78,
+    "read": 35,
+    "write": 24,
+    "high-risk": 17,
+    "sensitive": 2
+  },
+  "operations": [
+    {
+      "operationId": "AccessGroupsAddMembers",
+      "method": "POST",
+      "path": "/api/AccessGroups/AddMembers",
+      "group": "AccessGroups",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "AccessGroups"
+      ],
+      "summary": "Добавить новых участников в группу доступа",
+      "description": "Add members to an access group.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "accessGroupId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "AccessGroupsCreate",
+      "method": "POST",
+      "path": "/api/AccessGroups/Create",
+      "group": "AccessGroups",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "AccessGroups"
+      ],
+      "summary": "Создать группу доступа",
+      "description": "Create a new access group.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "name",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "AccessGroupsDelete",
+      "method": "POST",
+      "path": "/api/AccessGroups/Delete",
+      "group": "AccessGroups",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "AccessGroups"
+      ],
+      "summary": "Удалить группу доступа",
+      "description": "Delete an access group.\n\nWARNING: Destructive: removes the access group. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "accessGroupId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "AccessGroupsGetDetails",
+      "method": "GET",
+      "path": "/api/AccessGroups/GetDetails",
+      "group": "AccessGroups",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "AccessGroups"
+      ],
+      "summary": "Получить подробности группы доступа",
+      "description": "Get details of a single access group by id.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "accessGroupId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "AccessGroupsGetGroupClasses",
+      "method": "GET",
+      "path": "/api/AccessGroups/GetGroupClasses",
+      "group": "AccessGroups",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "AccessGroups"
+      ],
+      "summary": "Получить идентификаторы групповых классов группы доступа",
+      "description": "List group classes linked to an access group (paginated).",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "accessGroupId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "AccessGroupsGetIndividualClasses",
+      "method": "GET",
+      "path": "/api/AccessGroups/GetIndividualClasses",
+      "group": "AccessGroups",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "AccessGroups"
+      ],
+      "summary": "Получить идентификаторы индивидуальных классов группы доступа",
+      "description": "List individual classes linked to an access group (paginated).",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "accessGroupId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "AccessGroupsGetList",
+      "method": "GET",
+      "path": "/api/AccessGroups/GetList",
+      "group": "AccessGroups",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "AccessGroups"
+      ],
+      "summary": "Получить список групп доступа",
+      "description": "List access groups with optional filters by teacher, group class, or individual class.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "teacherId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "groupClassId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "individualClassId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "AccessGroupsGetTeachers",
+      "method": "GET",
+      "path": "/api/AccessGroups/GetTeachers",
+      "group": "AccessGroups",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "AccessGroups"
+      ],
+      "summary": "Получить идентификаторы учителей группы доступа",
+      "description": "List teachers assigned to an access group (paginated).",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "accessGroupId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "AccessGroupsRemoveMembers",
+      "method": "POST",
+      "path": "/api/AccessGroups/RemoveMembers",
+      "group": "AccessGroups",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "AccessGroups"
+      ],
+      "summary": "Удалить участников из группы доступа",
+      "description": "Remove members from an access group.\n\nWARNING: Destructive: unlinks members from the group. Requires client-side approval.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "accessGroupId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "BooksGetBook",
+      "method": "POST",
+      "path": "/api/Books/GetBook",
+      "group": "Books",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Books"
+      ],
+      "summary": "Получить книгу",
+      "description": "Get a single book by id.",
+      "hasBody": true,
+      "bodyRequired": true,
+      "parameters": []
+    },
+    {
+      "operationId": "BooksGetBooksPlatform",
+      "method": "POST",
+      "path": "/api/Books/GetBooksPlatform",
+      "group": "Books",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Books"
+      ],
+      "summary": "Получить список книг платформы",
+      "description": "List books available on the platform.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "BooksGetBooksSchool",
+      "method": "POST",
+      "path": "/api/Books/GetBooksSchool",
+      "group": "Books",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Books"
+      ],
+      "summary": "Получить список книг школы",
+      "description": "List books available to the current school.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "BooksPinLessonToClass",
+      "method": "POST",
+      "path": "/api/Books/PinLessonToClass",
+      "group": "Books",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Books"
+      ],
+      "summary": "Закрепить урок в классе",
+      "description": "Pin a lesson from a book to a class.",
+      "hasBody": true,
+      "bodyRequired": true,
+      "parameters": []
+    },
+    {
+      "operationId": "ClassesGetStatistics",
+      "method": "POST",
+      "path": "/api/Classes/GetStatistics",
+      "group": "Classes",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Classes"
+      ],
+      "summary": "Получить статустику класса",
+      "description": "Get class statistics.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "GroupClassesChangeTeacher",
+      "method": "POST",
+      "path": "/api/GroupClasses/ChangeTeacher",
+      "group": "GroupClasses",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "GroupClasses"
+      ],
+      "summary": "Сменить учителя группового класса",
+      "description": "Change the teacher assigned to a group class.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "teacherId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "GroupClassesCreate",
+      "method": "POST",
+      "path": "/api/GroupClasses/Create",
+      "group": "GroupClasses",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "GroupClasses"
+      ],
+      "summary": "Создать групповой класс",
+      "description": "Create a new group class.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "GroupClassesDelete",
+      "method": "POST",
+      "path": "/api/GroupClasses/Delete",
+      "group": "GroupClasses",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "GroupClasses"
+      ],
+      "summary": "Удалить групповой класс",
+      "description": "Delete a group class.\n\nWARNING: Destructive: removes the group class. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "GroupClassesGetDetail",
+      "method": "GET",
+      "path": "/api/GroupClasses/GetDetail",
+      "group": "GroupClasses",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "GroupClasses"
+      ],
+      "summary": "Получить детали группового класса",
+      "description": "Get details of a single group class by id.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "GroupClassesGetList",
+      "method": "GET",
+      "path": "/api/GroupClasses/GetList",
+      "group": "GroupClasses",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "GroupClasses"
+      ],
+      "summary": "Получить список групповых классов",
+      "description": "List group classes with optional filters and pagination.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "TeacherId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "PupilId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Search",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        },
+        {
+          "name": "UpdatedAfter",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Page.Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Page.Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        }
+      ]
+    },
+    {
+      "operationId": "GroupClassesUpdate",
+      "method": "POST",
+      "path": "/api/GroupClasses/Update",
+      "group": "GroupClasses",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "GroupClasses"
+      ],
+      "summary": "Обновить групповой класс",
+      "description": "Update an existing group class.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "GroupClassPupilsAdd",
+      "method": "POST",
+      "path": "/api/GroupClassPupils/Add",
+      "group": "GroupClassPupils",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "GroupClassPupils"
+      ],
+      "summary": "Добавить учеников в групповой класс",
+      "description": "Add pupils to a group class.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "GroupClassPupilsDelete",
+      "method": "POST",
+      "path": "/api/GroupClassPupils/Delete",
+      "group": "GroupClassPupils",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "GroupClassPupils"
+      ],
+      "summary": "Удалить ученика из группового класса",
+      "description": "Remove a pupil from a group class.\n\nWARNING: Destructive: unlinks the pupil from the group class. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "pupilId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "GroupClassPupilsGetList",
+      "method": "GET",
+      "path": "/api/GroupClassPupils/GetList",
+      "group": "GroupClassPupils",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "GroupClassPupils"
+      ],
+      "summary": "Получить список учеников группового класса",
+      "description": "List pupils in a group class (paginated).",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "ClassId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Page.Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Page.Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        }
+      ]
+    },
+    {
+      "operationId": "IndividualClassesChangeTeacher",
+      "method": "POST",
+      "path": "/api/IndividualClasses/ChangeTeacher",
+      "group": "IndividualClasses",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "IndividualClasses"
+      ],
+      "summary": "Установить/сменить учителя в индивидуальном классе",
+      "description": "Change the teacher assigned to an individual class.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "teacherId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "classLearningLanguage",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/PSMCommon.Enums.EnumCommonLanguageType"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "IndividualClassesCreate",
+      "method": "POST",
+      "path": "/api/IndividualClasses/Create",
+      "group": "IndividualClasses",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "IndividualClasses"
+      ],
+      "summary": "Создать групповой класс",
+      "description": "Create a new individual class.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "IndividualClassesDelete",
+      "method": "POST",
+      "path": "/api/IndividualClasses/Delete",
+      "group": "IndividualClasses",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "IndividualClasses"
+      ],
+      "summary": "Удалить индивидуальный класс",
+      "description": "Delete an individual class.\n\nWARNING: Destructive: removes the individual class. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "IndividualClassesGetDetail",
+      "method": "GET",
+      "path": "/api/IndividualClasses/GetDetail",
+      "group": "IndividualClasses",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "IndividualClasses"
+      ],
+      "summary": "Получить детали индивидуального класса",
+      "description": "Get details of a single individual class by id.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "IndividualClassesGetList",
+      "method": "GET",
+      "path": "/api/IndividualClasses/GetList",
+      "group": "IndividualClasses",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "IndividualClasses"
+      ],
+      "summary": "Получить список индивидуальных классов",
+      "description": "List individual classes with optional filters and pagination.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "TeacherId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "PupilId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Search",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        },
+        {
+          "name": "UpdatedAfter",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Page.Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Page.Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        }
+      ]
+    },
+    {
+      "operationId": "IndividualClassesUpdate",
+      "method": "POST",
+      "path": "/api/IndividualClasses/Update",
+      "group": "IndividualClasses",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "IndividualClasses"
+      ],
+      "summary": "Обновить индивидуальный класс",
+      "description": "Update an existing individual class.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "classId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "LessonPackagesGetList",
+      "method": "GET",
+      "path": "/api/LessonPackages/GetList",
+      "group": "LessonPackages",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonPackages"
+      ],
+      "summary": "Получить список пакетов лекций класса",
+      "description": "List lesson packages for a pupil and/or class.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "pupilId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "classId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "updatedAfter",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "LessonPackagesSetPackage",
+      "method": "POST",
+      "path": "/api/LessonPackages/SetPackage",
+      "group": "LessonPackages",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonPackages"
+      ],
+      "summary": "Установить пакет лекций классу",
+      "description": "Set a lesson package for a pupil and class.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "pupilId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "classId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "LessonPackagesUpdatePackagePeriod",
+      "method": "POST",
+      "path": "/api/LessonPackages/UpdatePackagePeriod",
+      "group": "LessonPackages",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonPackages"
+      ],
+      "summary": "Обновить период пакета",
+      "description": "Update the period of a lesson package.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "pupilId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "classId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "LessonPackagesWriteOffLessons",
+      "method": "POST",
+      "path": "/api/LessonPackages/WriteOffLessons",
+      "group": "LessonPackages",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonPackages"
+      ],
+      "summary": "Списать лекции с баланса ученика",
+      "description": "Write off lessons from a package.\n\nWARNING: Destructive: decrements lesson balance. Requires client-side approval.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "packageDurationId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "LessonTariffsAddTariffDuration",
+      "method": "POST",
+      "path": "/api/LessonTariffs/AddTariffDuration",
+      "group": "LessonTariffs",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonTariffs"
+      ],
+      "summary": "Добавить пакет лекций с продолжительностью к тарифу",
+      "description": "Add a duration option to a lesson tariff.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "lessonTariffId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "LessonTariffsCreate",
+      "method": "POST",
+      "path": "/api/LessonTariffs/Create",
+      "group": "LessonTariffs",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonTariffs"
+      ],
+      "summary": "Добавить новый тариф",
+      "description": "Create a new lesson tariff.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "LessonTariffsDelete",
+      "method": "POST",
+      "path": "/api/LessonTariffs/Delete",
+      "group": "LessonTariffs",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonTariffs"
+      ],
+      "summary": "Удалить тариф",
+      "description": "Delete a lesson tariff.\n\nWARNING: Destructive: removes the tariff. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "lessonTariffId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "LessonTariffsDeleteLessonPackage",
+      "method": "POST",
+      "path": "/api/LessonTariffs/DeleteLessonPackage",
+      "group": "LessonTariffs",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonTariffs"
+      ],
+      "summary": "Удалить пакет лекций из продолжительности в тарифе",
+      "description": "Delete a lesson package attached to a tariff.\n\nWARNING: Destructive: removes the lesson package. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "LessonTariffId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        },
+        {
+          "name": "LessonTariffDurationId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        },
+        {
+          "name": "LessonTariffPackageId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "LessonTariffsDeleteTariffDuration",
+      "method": "POST",
+      "path": "/api/LessonTariffs/DeleteTariffDuration",
+      "group": "LessonTariffs",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonTariffs"
+      ],
+      "summary": "Удалить продолжительность с пакетами лекций из тарифа",
+      "description": "Delete a tariff duration.\n\nWARNING: Destructive: removes the tariff duration. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "LessonTariffId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        },
+        {
+          "name": "LessonTariffDurationId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "LessonTariffsGetList",
+      "method": "GET",
+      "path": "/api/LessonTariffs/GetList",
+      "group": "LessonTariffs",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonTariffs"
+      ],
+      "summary": "Получить список тарифов школы",
+      "description": "List lesson tariffs (paginated, with soft-deleted filter).",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "Search",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        },
+        {
+          "name": "IsDeleted",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Page.Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Page.Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        }
+      ]
+    },
+    {
+      "operationId": "LessonTariffsGetTariffDurationList",
+      "method": "GET",
+      "path": "/api/LessonTariffs/GetTariffDurationList",
+      "group": "LessonTariffs",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonTariffs"
+      ],
+      "summary": "Получить продолжительность тарифов школы",
+      "description": "List lesson tariff durations (paginated).",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "LessonTariffIds",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "dotted": false
+        },
+        {
+          "name": "Page.Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Page.Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        }
+      ]
+    },
+    {
+      "operationId": "LessonTariffsGetTariffForDurationId",
+      "method": "GET",
+      "path": "/api/LessonTariffs/GetTariffForDurationId",
+      "group": "LessonTariffs",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "LessonTariffs"
+      ],
+      "summary": "NEW(22.11.2022) Получить тариф по ид длительности",
+      "description": "Get a lesson tariff by its duration id.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "schoolLessonTariffDurationId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "MarathonAddMarathonNewStudents",
+      "method": "GET",
+      "path": "/api/Marathon/AddMarathonNewStudents",
+      "group": "Marathon",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Добавить ученика в марафон",
+      "description": "Add new students to a marathon by email. Note: this is a GET that mutates state.\n\nWARNING: Mutates state: invites new students to a marathon. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "MailMessageLanguageId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/PSMCommon.Enums.EnumCommonLanguageType"
+          },
+          "dotted": false
+        },
+        {
+          "name": "ModeratorsIds",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "dotted": false
+        },
+        {
+          "name": "MarathonId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Emails",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "MarathonChangeActivationMarathonPupil",
+      "method": "POST",
+      "path": "/api/Marathon/ChangeActivationMarathonPupil",
+      "group": "Marathon",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Cмена активности ученика марафона",
+      "description": "Activate or deactivate a pupil in a marathon.\n\nWARNING: Destructive: changes pupil activation state in a marathon. Requires client-side approval.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "MarathonCreateModerator",
+      "method": "POST",
+      "path": "/api/Marathon/CreateModerator",
+      "group": "Marathon",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Добавить модератора в марафон.",
+      "description": "Create a marathon moderator.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "MarathonDeleteModerator",
+      "method": "POST",
+      "path": "/api/Marathon/DeleteModerator",
+      "group": "Marathon",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Удалить модератора из марафона.",
+      "description": "Delete a marathon moderator.\n\nWARNING: Destructive: removes the moderator. Requires client-side approval.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "MarathonGetMarathonList",
+      "method": "GET",
+      "path": "/api/Marathon/GetMarathonList",
+      "group": "Marathon",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Получить  марафонов",
+      "description": "List marathons (paginated, with search and folder filter).",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "SearchTerm",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        },
+        {
+          "name": "FolderId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Page.Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Page.Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        }
+      ]
+    },
+    {
+      "operationId": "MarathonGetMarathonStudents",
+      "method": "GET",
+      "path": "/api/Marathon/GetMarathonStudents",
+      "group": "Marathon",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Получить учеников марафона",
+      "description": "List students in a marathon with search and filter.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "MarathonId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        },
+        {
+          "name": "SearchTerm",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Filter",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/Microservice.Marathons.Client.Models.EnumGetMarathonPupilsFilter"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "MarathonGetModerators",
+      "method": "GET",
+      "path": "/api/Marathon/GetModerators",
+      "group": "Marathon",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Получить кураторов марафона",
+      "description": "List marathon moderators (paginated).",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "MarathonId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        },
+        {
+          "name": "TeacherId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Page.Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Page.Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        }
+      ]
+    },
+    {
+      "operationId": "MarathonSetModeratorsForPupil",
+      "method": "POST",
+      "path": "/api/Marathon/SetModeratorsForPupil",
+      "group": "Marathon",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Назначить модераторов ученику.",
+      "description": "Assign moderators to a marathon pupil.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "MarathonSetPupilsForModerator",
+      "method": "POST",
+      "path": "/api/Marathon/SetPupilsForModerator",
+      "group": "Marathon",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Назначить учеников модератору.",
+      "description": "Assign pupils to a marathon moderator.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "MarathonUnsetModeratorsForPupil",
+      "method": "POST",
+      "path": "/api/Marathon/UnsetModeratorsForPupil",
+      "group": "Marathon",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Убрать модераторов у ученика.",
+      "description": "Unassign moderators from a marathon pupil.\n\nWARNING: Destructive: unlinks moderators from the pupil. Requires client-side approval.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "MarathonUnsetPupilsForModerator",
+      "method": "POST",
+      "path": "/api/Marathon/UnsetPupilsForModerator",
+      "group": "Marathon",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Marathon"
+      ],
+      "summary": "Убрать учеников у модератора.",
+      "description": "Unassign pupils from a marathon moderator.\n\nWARNING: Destructive: unlinks pupils from the moderator. Requires client-side approval.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "PupilsCreate",
+      "method": "POST",
+      "path": "/api/Pupils/Create",
+      "group": "Pupils",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Pupils"
+      ],
+      "summary": "Добавить нового ученика",
+      "description": "Create a new pupil.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "PupilsDelete",
+      "method": "POST",
+      "path": "/api/Pupils/Delete",
+      "group": "Pupils",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Pupils"
+      ],
+      "summary": "Удалить ученика",
+      "description": "Delete a pupil.\n\nWARNING: Destructive: removes the pupil. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "pupilId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "PupilsGetCursorList",
+      "method": "GET",
+      "path": "/api/Pupils/GetCursorList",
+      "group": "Pupils",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Pupils"
+      ],
+      "summary": "Получить список учеников школы",
+      "description": "List pupils using cursor-based pagination.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "Search",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Cursor.AfterId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Cursor.BeforeId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Cursor.Limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Cursor.MaxLimit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": true
+        },
+        {
+          "name": "ActiveOnly",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          },
+          "dotted": false
+        },
+        {
+          "name": "OnlyUpdated",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          },
+          "dotted": false
+        },
+        {
+          "name": "OnlyUnchanged",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          },
+          "dotted": false
+        },
+        {
+          "name": "UpdatedAfter",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        },
+        {
+          "name": "UpdatedBefore",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "PupilsGetDetail",
+      "method": "GET",
+      "path": "/api/Pupils/GetDetail",
+      "group": "Pupils",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Pupils"
+      ],
+      "summary": "Получить детальную информацию ученика",
+      "description": "Get details of a single pupil by id.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "pupilId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "PupilsGetList",
+      "method": "GET",
+      "path": "/api/Pupils/GetList",
+      "group": "Pupils",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Pupils"
+      ],
+      "summary": "Получить список учеников школы",
+      "description": "List pupils with search, filters and pagination.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "Search",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Page.Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Page.Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "ActiveOnly",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          },
+          "dotted": false
+        },
+        {
+          "name": "OnlyUpdated",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          },
+          "dotted": false
+        },
+        {
+          "name": "OnlyUnchanged",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          },
+          "dotted": false
+        },
+        {
+          "name": "UpdatedAfter",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        },
+        {
+          "name": "UpdatedBefore",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "PupilsUpdate",
+      "method": "POST",
+      "path": "/api/Pupils/Update",
+      "group": "Pupils",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Pupils"
+      ],
+      "summary": "Обновить данные ученика",
+      "description": "Update an existing pupil.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "pupilId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "PupilTagCreate",
+      "method": "POST",
+      "path": "/api/PupilTag/Create",
+      "group": "PupilTag",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "PupilTag"
+      ],
+      "summary": "Добавить тэг школы",
+      "description": "Create a new pupil tag.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "TagName",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "PupilTagDelete",
+      "method": "POST",
+      "path": "/api/PupilTag/Delete",
+      "group": "PupilTag",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "PupilTag"
+      ],
+      "summary": "Удалить тэг школы",
+      "description": "Delete a pupil tag.\n\nWARNING: Destructive: removes the tag. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "TagId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "PupilTagGetList",
+      "method": "GET",
+      "path": "/api/PupilTag/GetList",
+      "group": "PupilTag",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "PupilTag"
+      ],
+      "summary": "Получить тэги онлайн школы",
+      "description": "List all pupil tags.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "ScheduleCreateLesson",
+      "method": "POST",
+      "path": "/api/Schedule/CreateLesson",
+      "group": "Schedule",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Schedule"
+      ],
+      "summary": "Добавить урок в расписание",
+      "description": "Create a new lesson in the schedule.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "ScheduleDeleteLesson",
+      "method": "POST",
+      "path": "/api/Schedule/DeleteLesson",
+      "group": "Schedule",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Schedule"
+      ],
+      "summary": "Удалить урок из расписания",
+      "description": "Delete a lesson from the schedule.\n\nWARNING: Destructive: removes the lesson. Requires client-side approval.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "lessonId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "ScheduleGetPackageForGroupLesson",
+      "method": "GET",
+      "path": "/api/Schedule/GetPackageForGroupLesson",
+      "group": "Schedule",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Schedule"
+      ],
+      "summary": "NEW(22.11.2022) Получить пакет по групповому уроку",
+      "description": "Get the lesson package applicable to a group lesson.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "lessonId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "pupilId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "ScheduleGetPackageForIndividualLesson",
+      "method": "GET",
+      "path": "/api/Schedule/GetPackageForIndividualLesson",
+      "group": "Schedule",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Schedule"
+      ],
+      "summary": "NEW(22.11.2022) Получить пакет по индивидуальному уроку",
+      "description": "Get the lesson package applicable to an individual lesson.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "lessonId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "ScheduleGetPupilSchedule",
+      "method": "POST",
+      "path": "/api/Schedule/GetPupilSchedule",
+      "group": "Schedule",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Schedule"
+      ],
+      "summary": "Получить расписание ученика",
+      "description": "Get a pupil's schedule for a date range.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "pupilId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "dateStart",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        },
+        {
+          "name": "dateEnd",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "ScheduleGetSchoolSchedule",
+      "method": "POST",
+      "path": "/api/Schedule/GetSchoolSchedule",
+      "group": "Schedule",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Schedule"
+      ],
+      "summary": "Получить школьное расписание",
+      "description": "Get the school schedule for a date range.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "ScheduleGetSchoolWeekWorkTime",
+      "method": "GET",
+      "path": "/api/Schedule/GetSchoolWeekWorkTime",
+      "group": "Schedule",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Schedule"
+      ],
+      "summary": "Получить рабочее время школы",
+      "description": "Get the school's weekly work time.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "ScheduleGetTeacherSchedule",
+      "method": "POST",
+      "path": "/api/Schedule/GetTeacherSchedule",
+      "group": "Schedule",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Schedule"
+      ],
+      "summary": "Получить расписание учителя",
+      "description": "Get a teacher's schedule for a date range in a given timezone.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "teacherId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "dateStart",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        },
+        {
+          "name": "dateEnd",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        },
+        {
+          "name": "timezone",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "ScheduleGetTeacherWeekWorkTime",
+      "method": "GET",
+      "path": "/api/Schedule/GetTeacherWeekWorkTime",
+      "group": "Schedule",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Schedule"
+      ],
+      "summary": "Получить рабочее врем учителя",
+      "description": "Get a teacher's weekly work time.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "teacherId",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        },
+        {
+          "name": "fromMonday",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "TeachersCreate",
+      "method": "POST",
+      "path": "/api/Teachers/Create",
+      "group": "Teachers",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Teachers"
+      ],
+      "summary": "Создать учителя",
+      "description": "Create a new teacher.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": []
+    },
+    {
+      "operationId": "TeachersDelete",
+      "method": "POST",
+      "path": "/api/Teachers/Delete",
+      "group": "Teachers",
+      "riskClass": "high-risk",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Teachers"
+      ],
+      "summary": "Удалить учителя",
+      "description": "Delete a teacher.\n\nWARNING: Destructive: removes the teacher. Requires client-side approval.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "teacherId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "TeachersGetDetail",
+      "method": "GET",
+      "path": "/api/Teachers/GetDetail",
+      "group": "Teachers",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Teachers"
+      ],
+      "summary": "Получить детальную информацию учителя",
+      "description": "Get details of a single teacher by id.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "teacherId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "TeachersGetList",
+      "method": "GET",
+      "path": "/api/Teachers/GetList",
+      "group": "Teachers",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Teachers"
+      ],
+      "summary": "Получить список учителей школы",
+      "description": "List teachers with search and pagination.",
+      "hasBody": false,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "Search",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "dotted": false
+        },
+        {
+          "name": "Page.Skip",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        },
+        {
+          "name": "Page.Take",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": true
+        }
+      ]
+    },
+    {
+      "operationId": "TeachersUpdate",
+      "method": "POST",
+      "path": "/api/Teachers/Update",
+      "group": "Teachers",
+      "riskClass": "write",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "Teachers"
+      ],
+      "summary": "Обновить учителя",
+      "description": "Update an existing teacher.",
+      "hasBody": true,
+      "bodyRequired": false,
+      "parameters": [
+        {
+          "name": "teacherId",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dotted": false
+        }
+      ]
+    },
+    {
+      "operationId": "UserAuthCheckAuthToken",
+      "method": "POST",
+      "path": "/api/UserAuth/CheckAuthToken",
+      "group": "UserAuth",
+      "riskClass": "read",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "UserAuth"
+      ],
+      "summary": "Проверить валидность токена авторизации",
+      "description": "Check whether an auth token is valid.",
+      "hasBody": true,
+      "bodyRequired": true,
+      "parameters": []
+    },
+    {
+      "operationId": "UserAuthLoginPupil",
+      "method": "POST",
+      "path": "/api/UserAuth/LoginPupil",
+      "group": "UserAuth",
+      "riskClass": "sensitive",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "UserAuth"
+      ],
+      "summary": "Получить токен авторизации ученика",
+      "description": "Authenticate a pupil and return a login token.\n\nWARNING: Sensitive: returns a login token. Public enablement requires recorded product/security approval. The token must never be logged, cached, or returned outside the direct successful tool result.",
+      "hasBody": true,
+      "bodyRequired": true,
+      "parameters": []
+    },
+    {
+      "operationId": "UserAuthLoginTeacher",
+      "method": "POST",
+      "path": "/api/UserAuth/LoginTeacher",
+      "group": "UserAuth",
+      "riskClass": "sensitive",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "tags": [
+        "UserAuth"
+      ],
+      "summary": "Получить токен авторизации учителя",
+      "description": "Authenticate a teacher and return a login token.\n\nWARNING: Sensitive: returns a login token. Public enablement requires recorded product/security approval. The token must never be logged, cached, or returned outside the direct successful tool result.",
+      "hasBody": true,
+      "bodyRequired": true,
+      "parameters": []
+    }
+  ]
+}
