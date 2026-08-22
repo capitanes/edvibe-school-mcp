@@ -29,7 +29,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-const { descriptionFor } = require("./operation-meta");
+const { descriptionFor } = require("./operation-meta.cjs");
 
 const ROOT = path.resolve(__dirname, "..");
 const SNAPSHOTS_DIR = path.join(ROOT, "openapi", "snapshots");

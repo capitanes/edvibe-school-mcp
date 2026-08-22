@@ -21,8 +21,8 @@
 
 const fs = require("fs");
 const path = require("path");
-const { OPERATION_META, descriptionFor } = require("./operation-meta");
-const { RISK_BY_OPERATION } = require("./risk-classification");
+const { OPERATION_META, descriptionFor } = require("./operation-meta.cjs");
+const { RISK_BY_OPERATION } = require("./risk-classification.cjs");
 
 const ROOT = path.resolve(__dirname, "..");
 const MANIFEST_PATH = path.join(ROOT, "manifest", "operations.json");

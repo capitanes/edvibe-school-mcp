@@ -20,8 +20,8 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-const { RISK_BY_OPERATION, EXPECTED_COUNTS } = require("./risk-classification");
-const { descriptionFor } = require("./operation-meta");
+const { RISK_BY_OPERATION, EXPECTED_COUNTS } = require("./risk-classification.cjs");
+const { descriptionFor } = require("./operation-meta.cjs");
 
 const ROOT = path.resolve(__dirname, "..");
 const SNAPSHOTS_DIR = path.join(ROOT, "openapi", "snapshots");

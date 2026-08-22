@@ -4,15 +4,20 @@
   "private": true,
   "description": "Stateless MCP server for the Edvibe School API. Experimental/unofficial pilot — not yet transferred to Edvibe.",
   "license": "UNLICENSED",
-  "type": "commonjs",
+  "type": "module",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "manifest": "node scripts/generate-manifest.js",
-    "normalize": "node scripts/normalize.js",
-    "build:contract": "node scripts/generate-manifest.js && node scripts/normalize.js",
-    "validate": "node scripts/validate.js",
-    "ci": "node scripts/validate.js"
+    "manifest": "node scripts/generate-manifest.cjs",
+    "normalize": "node scripts/normalize.cjs",
+    "build:contract": "node scripts/generate-manifest.cjs && node scripts/normalize.cjs",
+    "postman": "node scripts/generate-postman-collection.cjs",
+    "validate": "node scripts/validate.cjs",
+    "ci": "node scripts/validate.cjs",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0"
   }
 }

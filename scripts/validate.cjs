@@ -26,7 +26,7 @@ const ROOT = path.resolve(__dirname, "..");
 const SNAPSHOTS_DIR = path.join(ROOT, "openapi", "snapshots");
 const MANIFEST_PATH = path.join(ROOT, "manifest", "operations.json");
 const NORMALIZED_PATH = path.join(ROOT, "openapi", "normalized", "edvibe-school-api.normalized.json");
-const { EXPECTED_COUNTS } = require("./risk-classification");
+const { EXPECTED_COUNTS } = require("./risk-classification.cjs");
 
 const HTTP_METHODS = ["get", "post", "put", "patch", "delete", "head", "options", "trace"];
 
