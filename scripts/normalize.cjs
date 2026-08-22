@@ -137,6 +137,32 @@ function main() {
       op["x-edvibe-risk"] = m.riskClass;
       op["x-edvibe-annotations"] = m.annotations;
 
+      // Apply empirically verified required body field overrides.
+      // See scripts/required-overrides.cjs and CONTEXT.md.
+      // This augments the upstream schema's `required` array with fields that
+      // the live API rejects but the upstream OpenAPI marks optional. We only
+      // add to `required`; we never remove upstream-required fields.
+      if (Array.isArray(m.bodyRequiredFields) && m.bodyRequiredFields.length > 0) {
+        const rb = op.requestBody && op.requestBody.content && op.requestBody.content["application/json"];
+        if (rb && rb.schema) {
+          let schema = rb.schema;
+          // Resolve $ref inline (deep clone so we don't mutate the shared component).
+          if (schema.$ref) {
+            const refName = schema.$ref.replace("#/components/schemas/", "");
+            const resolved = norm.components && norm.components.schemas && norm.components.schemas[refName];
+            if (resolved) {
+              // Inline a deep copy so per-operation overrides don't leak into
+              // other operations sharing the same component schema.
+              schema = JSON.parse(JSON.stringify(resolved));
+              rb.schema = schema;
+            }
+          }
+          if (schema) {
+            schema.required = Array.from(new Set([...(schema.required || []), ...m.bodyRequiredFields]));
+          }
+        }
+      }
+
       // Dotted parameter flattening: record mapping, do not change schema yet.
       if (Array.isArray(op.parameters)) {
         /** @type {Array<{from:string,to:string}>} */

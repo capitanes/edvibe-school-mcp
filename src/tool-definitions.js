@@ -47,6 +47,7 @@ function schemaToInputSchema(schema, components, depth = 0) {
     }
   }
   if (schema.additionalProperties === false) result.additionalProperties = false;
+  if (Array.isArray(schema.required)) result.required = [...schema.required];
   return result;
 }
 
@@ -77,11 +78,30 @@ function buildInputSchema(op, spec) {
       if (methodOp?.requestBody?.content?.["application/json"]?.schema) {
         const bodySchema = methodOp.requestBody.content["application/json"].schema;
         const resolved = schemaToInputSchema(bodySchema, spec.components);
+        // Body fields empirically required by the live API but not declared
+        // as such in upstream OpenAPI. See scripts/required-overrides.cjs and
+        // CONTEXT.md → "Расхождения upstream OpenAPI vs live-поведение".
+        const overrideRequired = new Set(op.bodyRequiredFields || []);
         if (resolved.properties) {
           for (const [key, val] of Object.entries(resolved.properties)) {
             // Prefix body params with "body" to avoid collisions with query params
             const inputName = `body${key[0].toUpperCase()}${key.slice(1)}`;
+            // Mark empirically required fields as required in the MCP input
+            // schema so the client knows they must be supplied.
+            if (overrideRequired.has(key)) {
+              val.description = `${val.description || ""} (empirically required by live API)`.trim();
+            }
             properties[inputName] = val;
+            if (overrideRequired.has(key)) required.push(inputName);
+          }
+        }
+        // Also honor any required fields the upstream schema itself declares.
+        if (Array.isArray(resolved.required)) {
+          for (const key of resolved.required) {
+            const inputName = `body${key[0].toUpperCase()}${key.slice(1)}`;
+            if (properties[inputName] && !required.includes(inputName)) {
+              required.push(inputName);
+            }
           }
         }
       }
@@ -115,6 +135,7 @@ export function loadToolDefinitions() {
         path: op.path,
         riskClass: op.riskClass,
         hasBody: op.hasBody,
+        bodyRequiredFields: op.bodyRequiredFields || [],
         parameters: op.parameters || [],
         group: op.group,
       },

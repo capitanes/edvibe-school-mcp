@@ -21,6 +21,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { RISK_BY_OPERATION, EXPECTED_COUNTS } = require("./risk-classification.cjs");
+const { requiredOverridesFor } = require("./required-overrides.cjs");
 const { descriptionFor } = require("./operation-meta.cjs");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -193,6 +194,10 @@ function main() {
         bodyContent && (bodyContent["application/json"] || bodyContent["text/json"]);
       const hasBody = !!jsonBody;
       const bodyRequired = !!(op.requestBody && op.requestBody.required);
+      // Empirically verified required body fields (see scripts/required-overrides.cjs
+      // and CONTEXT.md → "Расхождения upstream OpenAPI vs live-поведение").
+      // Empty for operations with no recorded overrides.
+      const bodyRequiredFields = requiredOverridesFor(operationId);
 
       operations.push({
         operationId,
@@ -206,6 +211,7 @@ function main() {
         description: descriptionFor(operationId),
         hasBody,
         bodyRequired,
+        bodyRequiredFields,
         parameters: params,
       });
     }

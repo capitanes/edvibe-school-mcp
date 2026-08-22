@@ -153,9 +153,13 @@ export async function callUpstream(ctx, method, apiPath, options = {}) {
       redirect: "manual", // never follow redirects
     };
 
+    // Always serialize the body when the operation declares one.
+    // Edvibe returns HTTP 400 "A non-empty request body is required" for POST
+    // endpoints whose body schema is an empty object (e.g. BooksGetBooksSchool),
+    // so we must send at least `{}` whenever hasBody is true.
     let bodyData = undefined;
-    if (options.body && Object.keys(options.body).length > 0) {
-      bodyData = JSON.stringify(options.body);
+    if (options.body !== undefined) {
+      bodyData = JSON.stringify(options.body ?? {});
     }
 
     return await new Promise((resolve, reject) => {

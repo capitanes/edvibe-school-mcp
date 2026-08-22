@@ -3832,7 +3832,96 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CabinetApi.School.WebApi.Models.PupilController.CreatePupilModel"
+                  "required": [
+                    "name",
+                    "email"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "accessGroups": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "description": "Список идентификаторов групп доступа",
+                      "nullable": true
+                    },
+                    "timezone": {
+                      "type": "integer",
+                      "description": "Часовой пояс в UTC",
+                      "format": "int32",
+                      "nullable": true
+                    },
+                    "name": {
+                      "minLength": 1,
+                      "type": "string",
+                      "description": "ФИО ученика"
+                    },
+                    "phone": {
+                      "type": "string",
+                      "description": "Телефон ученика",
+                      "nullable": true
+                    },
+                    "email": {
+                      "type": "string",
+                      "description": "Почта ученика",
+                      "format": "email",
+                      "nullable": true
+                    },
+                    "nativeLanguage": {
+                      "$ref": "#/components/schemas/PSMCommon.Enums.EnumCommonLanguageType"
+                    },
+                    "learningLanguage": {
+                      "$ref": "#/components/schemas/PSMCommon.Enums.EnumCommonLanguageType"
+                    },
+                    "lessonDuration": {
+                      "type": "integer",
+                      "description": "Длительность лекций для ученика",
+                      "format": "int32"
+                    },
+                    "pupilTags": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "description": "Теги ученика",
+                      "nullable": true
+                    },
+                    "linkContactType": {
+                      "$ref": "#/components/schemas/PSM.Model.Enums.EnumLinkContact"
+                    },
+                    "linkContact": {
+                      "type": "string",
+                      "description": "Контакт для связи",
+                      "nullable": true
+                    },
+                    "skype": {
+                      "type": "string",
+                      "description": "Скайп ученика",
+                      "nullable": true
+                    },
+                    "periodOfStudy": {
+                      "$ref": "#/components/schemas/PSM.Model.Enums.EnumPeriodOfStudy"
+                    },
+                    "note": {
+                      "type": "string",
+                      "description": "Примечание",
+                      "nullable": true
+                    },
+                    "purpose": {
+                      "type": "string",
+                      "description": "Приглашение к обучению /предложение/",
+                      "nullable": true
+                    },
+                    "isActive": {
+                      "type": "boolean",
+                      "description": "Добавляется ли ученик сразу активированным"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "Модель запроса создания ученика"
                 }
               },
               "text/json": {
@@ -4855,7 +4944,77 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CabinetApi.School.WebApi.Models.TeacherController.CreateTeacherModel"
+                  "required": [
+                    "name",
+                    "email"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "minLength": 1,
+                      "type": "string",
+                      "description": "ФИО учителя"
+                    },
+                    "email": {
+                      "type": "string",
+                      "description": "Почта учителя",
+                      "format": "email",
+                      "nullable": true
+                    },
+                    "phone": {
+                      "type": "string",
+                      "description": "Телефон учителя",
+                      "nullable": true
+                    },
+                    "skype": {
+                      "type": "string",
+                      "description": "Скайп учителя",
+                      "nullable": true
+                    },
+                    "accessGroups": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "description": "Список идентификаторов групп доступа учителя",
+                      "nullable": true
+                    },
+                    "accesses": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PSM.Model.Enums.EnumTeacherAccess"
+                      },
+                      "description": "Виды доступа учителя",
+                      "nullable": true
+                    },
+                    "linkContactType": {
+                      "$ref": "#/components/schemas/PSM.Model.Enums.EnumLinkContact"
+                    },
+                    "linkContact": {
+                      "type": "string",
+                      "description": "Контакт для связи с учителем",
+                      "nullable": true
+                    },
+                    "nativeLanguage": {
+                      "$ref": "#/components/schemas/PSMCommon.Enums.EnumCommonLanguageType"
+                    },
+                    "taughtLanguages": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PSMCommon.Enums.EnumCommonLanguageType"
+                      },
+                      "description": "Список преподаваемых учителем языков",
+                      "nullable": true
+                    },
+                    "timezone": {
+                      "type": "number",
+                      "description": "Часовой пояс учителя в UTC",
+                      "format": "double"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "Модель запроса добавления учителя в школу"
                 }
               },
               "text/json": {

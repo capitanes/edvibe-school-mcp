@@ -52,6 +52,7 @@
       "description": "Add members to an access group.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "accessGroupId",
@@ -84,6 +85,7 @@
       "description": "Create a new access group.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "name",
@@ -115,6 +117,7 @@
       "description": "Delete an access group.\n\nWARNING: Destructive: removes the access group. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "accessGroupId",
@@ -147,6 +150,7 @@
       "description": "Get details of a single access group by id.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "accessGroupId",
@@ -179,6 +183,7 @@
       "description": "List group classes linked to an access group (paginated).",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "accessGroupId",
@@ -231,6 +236,7 @@
       "description": "List individual classes linked to an access group (paginated).",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "accessGroupId",
@@ -283,6 +289,7 @@
       "description": "List access groups with optional filters by teacher, group class, or individual class.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "teacherId",
@@ -335,6 +342,7 @@
       "description": "List teachers assigned to an access group (paginated).",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "accessGroupId",
@@ -387,6 +395,7 @@
       "description": "Remove members from an access group.\n\nWARNING: Destructive: unlinks members from the group. Requires client-side approval.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "accessGroupId",
@@ -419,6 +428,7 @@
       "description": "Get a single book by id.",
       "hasBody": true,
       "bodyRequired": true,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -440,6 +450,7 @@
       "description": "List books available on the platform.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -461,6 +472,7 @@
       "description": "List books available to the current school.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -482,6 +494,7 @@
       "description": "Pin a lesson from a book to a class.",
       "hasBody": true,
       "bodyRequired": true,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -503,6 +516,7 @@
       "description": "Get class statistics.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -524,6 +538,7 @@
       "description": "Change the teacher assigned to a group class.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -566,6 +581,7 @@
       "description": "Create a new group class.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -587,6 +603,7 @@
       "description": "Delete a group class.\n\nWARNING: Destructive: removes the group class. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -619,6 +636,7 @@
       "description": "Get details of a single group class by id.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -651,6 +669,7 @@
       "description": "List group classes with optional filters and pagination.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "TeacherId",
@@ -732,6 +751,7 @@
       "description": "Update an existing group class.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -764,6 +784,7 @@
       "description": "Add pupils to a group class.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -796,6 +817,7 @@
       "description": "Remove a pupil from a group class.\n\nWARNING: Destructive: unlinks the pupil from the group class. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -838,6 +860,7 @@
       "description": "List pupils in a group class (paginated).",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "ClassId",
@@ -890,6 +913,7 @@
       "description": "Change the teacher assigned to an individual class.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -941,6 +965,7 @@
       "description": "Create a new individual class.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -962,6 +987,7 @@
       "description": "Delete an individual class.\n\nWARNING: Destructive: removes the individual class. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -994,6 +1020,7 @@
       "description": "Get details of a single individual class by id.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -1026,6 +1053,7 @@
       "description": "List individual classes with optional filters and pagination.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "TeacherId",
@@ -1107,6 +1135,7 @@
       "description": "Update an existing individual class.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "classId",
@@ -1139,6 +1168,7 @@
       "description": "List lesson packages for a pupil and/or class.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "pupilId",
@@ -1191,6 +1221,7 @@
       "description": "Set a lesson package for a pupil and class.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "pupilId",
@@ -1233,6 +1264,7 @@
       "description": "Update the period of a lesson package.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "pupilId",
@@ -1275,6 +1307,7 @@
       "description": "Write off lessons from a package.\n\nWARNING: Destructive: decrements lesson balance. Requires client-side approval.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "packageDurationId",
@@ -1307,6 +1340,7 @@
       "description": "Add a duration option to a lesson tariff.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "lessonTariffId",
@@ -1339,6 +1373,7 @@
       "description": "Create a new lesson tariff.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -1360,6 +1395,7 @@
       "description": "Delete a lesson tariff.\n\nWARNING: Destructive: removes the tariff. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "lessonTariffId",
@@ -1392,6 +1428,7 @@
       "description": "Delete a lesson package attached to a tariff.\n\nWARNING: Destructive: removes the lesson package. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "LessonTariffId",
@@ -1444,6 +1481,7 @@
       "description": "Delete a tariff duration.\n\nWARNING: Destructive: removes the tariff duration. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "LessonTariffId",
@@ -1486,6 +1524,7 @@
       "description": "List lesson tariffs (paginated, with soft-deleted filter).",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "Search",
@@ -1546,6 +1585,7 @@
       "description": "List lesson tariff durations (paginated).",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "LessonTariffIds",
@@ -1601,6 +1641,7 @@
       "description": "Get a lesson tariff by its duration id.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "schoolLessonTariffDurationId",
@@ -1633,6 +1674,7 @@
       "description": "Add new students to a marathon by email. Note: this is a GET that mutates state.\n\nWARNING: Mutates state: invites new students to a marathon. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "MailMessageLanguageId",
@@ -1699,6 +1741,7 @@
       "description": "Activate or deactivate a pupil in a marathon.\n\nWARNING: Destructive: changes pupil activation state in a marathon. Requires client-side approval.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -1720,6 +1763,7 @@
       "description": "Create a marathon moderator.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -1741,6 +1785,7 @@
       "description": "Delete a marathon moderator.\n\nWARNING: Destructive: removes the moderator. Requires client-side approval.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -1762,6 +1807,7 @@
       "description": "List marathons (paginated, with search and folder filter).",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "SearchTerm",
@@ -1823,6 +1869,7 @@
       "description": "List students in a marathon with search and filter.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "MarathonId",
@@ -1873,6 +1920,7 @@
       "description": "List marathon moderators (paginated).",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "MarathonId",
@@ -1935,6 +1983,7 @@
       "description": "Assign moderators to a marathon pupil.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -1956,6 +2005,7 @@
       "description": "Assign pupils to a marathon moderator.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -1977,6 +2027,7 @@
       "description": "Unassign moderators from a marathon pupil.\n\nWARNING: Destructive: unlinks moderators from the pupil. Requires client-side approval.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -1998,6 +2049,7 @@
       "description": "Unassign pupils from a marathon moderator.\n\nWARNING: Destructive: unlinks pupils from the moderator. Requires client-side approval.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -2019,6 +2071,9 @@
       "description": "Create a new pupil.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [
+        "email"
+      ],
       "parameters": []
     },
     {
@@ -2040,6 +2095,7 @@
       "description": "Delete a pupil.\n\nWARNING: Destructive: removes the pupil. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "pupilId",
@@ -2072,6 +2128,7 @@
       "description": "List pupils using cursor-based pagination.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "Search",
@@ -2190,6 +2247,7 @@
       "description": "Get details of a single pupil by id.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "pupilId",
@@ -2222,6 +2280,7 @@
       "description": "List pupils with search, filters and pagination.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "Search",
@@ -2320,6 +2379,7 @@
       "description": "Update an existing pupil.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "pupilId",
@@ -2352,6 +2412,7 @@
       "description": "Create a new pupil tag.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "TagName",
@@ -2383,6 +2444,7 @@
       "description": "Delete a pupil tag.\n\nWARNING: Destructive: removes the tag. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "TagId",
@@ -2415,6 +2477,7 @@
       "description": "List all pupil tags.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -2436,6 +2499,7 @@
       "description": "Create a new lesson in the schedule.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -2457,6 +2521,7 @@
       "description": "Delete a lesson from the schedule.\n\nWARNING: Destructive: removes the lesson. Requires client-side approval.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "lessonId",
@@ -2489,6 +2554,7 @@
       "description": "Get the lesson package applicable to a group lesson.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "lessonId",
@@ -2531,6 +2597,7 @@
       "description": "Get the lesson package applicable to an individual lesson.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "lessonId",
@@ -2563,6 +2630,7 @@
       "description": "Get a pupil's schedule for a date range.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "pupilId",
@@ -2615,6 +2683,7 @@
       "description": "Get the school schedule for a date range.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -2636,6 +2705,7 @@
       "description": "Get the school's weekly work time.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -2657,6 +2727,7 @@
       "description": "Get a teacher's schedule for a date range in a given timezone.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "teacherId",
@@ -2719,6 +2790,7 @@
       "description": "Get a teacher's weekly work time.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "teacherId",
@@ -2761,6 +2833,9 @@
       "description": "Create a new teacher.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [
+        "email"
+      ],
       "parameters": []
     },
     {
@@ -2782,6 +2857,7 @@
       "description": "Delete a teacher.\n\nWARNING: Destructive: removes the teacher. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "teacherId",
@@ -2814,6 +2890,7 @@
       "description": "Get details of a single teacher by id.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "teacherId",
@@ -2846,6 +2923,7 @@
       "description": "List teachers with search and pagination.",
       "hasBody": false,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "Search",
@@ -2897,6 +2975,7 @@
       "description": "Update an existing teacher.",
       "hasBody": true,
       "bodyRequired": false,
+      "bodyRequiredFields": [],
       "parameters": [
         {
           "name": "teacherId",
@@ -2929,6 +3008,7 @@
       "description": "Check whether an auth token is valid.",
       "hasBody": true,
       "bodyRequired": true,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -2950,6 +3030,7 @@
       "description": "Authenticate a pupil and return a login token.\n\nWARNING: Sensitive: returns a login token. Public enablement requires recorded product/security approval. The token must never be logged, cached, or returned outside the direct successful tool result.",
       "hasBody": true,
       "bodyRequired": true,
+      "bodyRequiredFields": [],
       "parameters": []
     },
     {
@@ -2971,6 +3052,7 @@
       "description": "Authenticate a teacher and return a login token.\n\nWARNING: Sensitive: returns a login token. Public enablement requires recorded product/security approval. The token must never be logged, cached, or returned outside the direct successful tool result.",
       "hasBody": true,
       "bodyRequired": true,
+      "bodyRequiredFields": [],
       "parameters": []
     }
   ]
