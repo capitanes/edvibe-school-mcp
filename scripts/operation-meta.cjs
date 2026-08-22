@@ -85,7 +85,7 @@ const OPERATION_META = {
   ScheduleGetPackageForIndividualLesson: { description: "Get the lesson package applicable to an individual lesson." },
   ScheduleGetPackageForGroupLesson: { description: "Get the lesson package applicable to a group lesson." },
   ScheduleGetTeacherSchedule: { description: "Get a teacher's schedule for a date range in a given timezone." },
-  ScheduleCreateLesson: { description: "Create a new lesson in the schedule." },
+  ScheduleCreateLesson: { description: "Create a new lesson in the schedule. The `groupId` field accepts the id of any class (group or individual). Creating a lesson may activate the pupil as a side effect (response includes `isActivatedPupil`)." },
   ScheduleDeleteLesson: { description: "Delete a lesson from the schedule.", warning: "Destructive: removes the lesson. Requires client-side approval." },
   TeachersGetList: { description: "List teachers with search and pagination." },
   TeachersGetDetail: { description: "Get details of a single teacher by id." },

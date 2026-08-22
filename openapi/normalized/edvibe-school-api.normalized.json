@@ -4686,7 +4686,7 @@
             "Schedule"
           ],
           "summary": "Добавить урок в расписание",
-          "description": "Create a new lesson in the schedule.",
+          "description": "Create a new lesson in the schedule. The `groupId` field accepts the id of any class (group or individual). Creating a lesson may activate the pupil as a side effect (response includes `isActivatedPupil`).",
           "requestBody": {
             "description": "Модель добавления урока в расписание",
             "content": {
