@@ -113,6 +113,16 @@ MCP-сервер обязан считать `HTTP 200` вместе с `isSucce
 
 Контрольные ID, созданные в ходе этих проб (для последующего cleanup): индивидуальные классы `2354995`–`2355000` (с пропуском `2354998`, который upstream зарезервировал/не вернул), уроки `29459741`–`29459745`. Все уроки запланированы на `2026-08-23` 10:00–14:00 UTC, по 60 минут. Записи подлежат удалению через `ScheduleDeleteLesson` и `IndividualClassesDelete` после Gate B.
 
+### Дополнительные live-наблюдения (GroupClassesCreate + GroupClassPupilsAdd)
+
+Зафиксировано 22 августа 2026 года на `edvibe.com` через `GroupClassesCreate` и `GroupClassPupilsAdd`.
+
+| operationId | Наблюдение | Что говорит upstream | Что происходит фактически | Вопрос product/engineering |
+|---|---|---|---|---|
+| `GroupClassPupilsAdd` | `classId` передаётся как query-параметр, а `pupilIds` — в body. | В OpenAPI `classId` объявлен как query-параметр (required), `pupilIds` — поле body. | Передача `classId` в body игнорируется; вызов падает. Работает только `?classId=<id>` + body `{ pupilIds: [...] }`. | Подтвердить асимметричное размещение параметров. Это расходится с `GroupClassesCreate` и `IndividualClassesCreate`, где все поля в body. Желательно привести к единообразию или явно задокументировать. |
+
+Контрольные ID, созданные в ходе этих проб (для последующего cleanup): групповые классы `2355017` («English A2 (demo)», учитель Zhanna, ученики Anna/Viktor/Dmitry) и `2355018` («English B1 (demo)», учитель Kirill, ученики Boris/Galina). Записи подлежат удалению через `GroupClassesDelete` после Gate B.
+
 ### Побочные наблюдения
 
 - `PupilsCreate` на пустом теле возвращает HTTP 500 без тела. Это нарушение контракта `BaseResponse`: ни `isSuccess`, ни `errorMessage`, ни `errorStackTrace`. Сервер MCP обязан воспринимать 5xx без тела как upstream-ошибку и не пытаться парсить `BaseResponse`.
