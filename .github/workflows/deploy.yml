@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch: # позволяет запустить вручную из GitHub UI
 
+permissions:
+  contents: read
+
 # Не запускать параллельные деплои — каждый новый пуш ждёт завершения предыдущего.
 concurrency:
   group: deploy-staging
