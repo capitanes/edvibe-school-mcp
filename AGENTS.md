@@ -219,6 +219,7 @@ ssh root@185.180.230.233 "cd /var/www/edvibe.sungurov.com/edvibe-school-mcp && g
 - `.env` — в `.gitignore`, на сервере не используется (секреты приходят в заголовках каждого запроса).
 - `web/` — в `.gitignore`, локальная тестовая папка.
 - `logs/` — в `.gitignore`, runtime-логи на сервере идут в `journalctl`.
+- Документация (`AGENTS.md`, `CONTEXT.md`, `PLAN.md`, `README.md`), upstream OpenAPI snapshot, normalized spec, Postman-коллекция, скрипты генерации/валидации и GitHub Actions workflow — **осознанно остаются в репозитории и на сервере** во время личного пилота. Они не нужны для runtime (`node src/index.js` их не читает), но вес ~162 KB не критичен. При передаче Edvibe (Gate C/D) и переходе на staging/production — настроить `git sparse-checkout` или Docker-образ только с runtime-файлами (`src/`, `manifest/operations.json`, `package.json`, `package-lock.json`). См. `PLAN.md` → Этап 6.
 
 ### Чего нельзя делать
 
