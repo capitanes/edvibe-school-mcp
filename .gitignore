@@ -16,6 +16,9 @@ logs/
 .postman/
 .mcp-local/
 
+# Local manual tests (e.g. python http.server static files)
+web/
+
 # OS / editor
 .DS_Store
 Thumbs.db

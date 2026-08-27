@@ -43,19 +43,23 @@ updated: 2026-08-22
 ## Approval gates
 
 | Gate | Что требует подтверждения | Что можно сделать до подтверждения |
-|---|---|---|
-| A — Public Postman | Создание/публикация публичного workspace, API или collection | Подготовить локальные spec/collection и показать diff |
+| --- | --- | --- |
 | B — Live writes | Любой запрос, меняющий live-данные, включая тестовую школу | Mock-тесты и read-only live smoke tests |
 | C — Repository transfer | Передача repo в организацию Edvibe и изменение владельца | Подготовить handoff checklist |
 | D — Deployment | Staging/production deploy, домены, DNS, secrets, monitoring | Собрать и локально проверить Docker image/config |
-| E — Publication | Снятие `experimental/unofficial`, официальный профиль, MCP Catalog | Подготовить English listing и release candidate |
 | F — Sensitive login tools | Публичное включение `LoginPupil` и `LoginTeacher` | Сохранить обе операции в 78-tool contract, но держать public tools disabled; выполнять mock и разрешённые локальные проверки |
+
+### Опциональные шаги (не блокируют запуск)
+
+| Шаг | Что даёт | Когда делать |
+| --- | --- | --- |
+| Postman MCP Catalog | Discoverability: школы находят сервер поиском в Cursor/Codex вместо ручного ввода URL | После запуска production, если Edvibe решит, что Catalog нужен. Onboarding через help center/инструкцию работает без Catalog. |
 
 ## Этап 1. Репозиторий и контракт API
 
 **Срок:** день 1.
 
-### Действия
+### Действия — этап 1
 
 - Создать отдельный приватный Git-репозиторий `edvibe-school-mcp`.
 - Скопировать в корень `README.md`, `CONTEXT.md`, `PLAN.md`, `AGENTS.md` из этого пакета.
@@ -65,58 +69,60 @@ updated: 2026-08-22
 - Добавить manifest/inventory с HTTP-методом, path, группой и классом риска.
 - Настроить CI-проверки схемы, форматирования, секретов и контрольных количеств.
 
-### Результат
+### Результат — этап 1
 
 - Воспроизводимая нормализованная OpenAPI-схема.
 - CI доказывает ровно 78 уникальных операций и сумму `35 + 24 + 17 + 2`.
 - В репозитории нет секретов.
 
-## Этап 2. Postman API и коллекция
+## Этап 2. Postman Collection (генерируется локально, публикация — опциональна)
 
 **Срок:** день 2.
+**Статус:** генерация коллекции выполняется локально скриптом, Postman-аккаунт не требуется до публикации.
 
 ### Действия
 
-- Подготовить отдельное pilot workspace; не менять видимость существующих личного или командного workspace.
-- Через Postman MCP импортировать нормализованную схему и сгенерировать коллекцию.
-- Разложить все 78 запросов по 14 фактическим группам API.
-- Использовать только placeholders и локальные secret variables; не создавать shared current values.
-- Добавить английские descriptions, examples, risk warnings и тесты `BaseResponse`.
-- Сверить каждый collection request с inventory.
-- Перед фактической публикацией запросить Gate A.
-- До официальной передачи маркировать публичный workspace/collection как `experimental` и `unofficial`.
+- Запустить `node scripts/generate-postman-collection.cjs` — генерирует `postman/edvibe-school-api.postman_collection.json` из manifest (78 запросов, 14 групп, placeholders вместо ключей).
+- Проверить parity через `node scripts/validate.cjs` — collection, manifest и normalized spec содержат одинаковые 78 операций.
+- Публикация коллекции в Postman Public API Network — **опциональный шаг**, не блокирует запуск. Onboarding через help center/инструкцию работает без Catalog (см. Approval gates → опциональные шаги).
 
 ### Результат
 
-- Коллекция содержит все 78 запросов без дублей и пропусков.
-- Нет реальных ключей, доменов клиентов и PII.
-- Коллекция готова для Public API Network и MCP Generator.
+- Коллекция сгенерирована локально, parity проверена.
+- Postman-аккаунт, workspace и publisher profile не требуются до официальной публикации (Этап 8).
 
-## Этап 3. Генерация личного MCP-пилота
+## Этап 3. MCP-сервер (написан вручную, Generator не используется)
 
 **Срок:** день 3.
+**Статус:** выполнен альтернативным путём — сервер написан вручную, без Postman MCP Generator.
 
-### Действия
+### Почему не Generator
 
-- Открыть Postman MCP Generator вручную в авторизованной веб-сессии.
-- Выбрать опубликованную pilot collection из Public API Network.
-- Включить все 78 запросов.
-- Сгенерировать Node.js MCP server сначала с транспортом STDIO.
-- Скачать ZIP и импортировать исходники в приватный репозиторий отдельным коммитом.
-- Зафиксировать версию/дату Generator и diff относительно доработанного кода.
+Изначально план предполагал генерацию кода через Postman MCP Generator из опубликованной коллекции. На практике сервер написан вручную (`src/index.js`, `src/upstream.js`, `src/tool-definitions.js`, `src/credential-context.js`), потому что:
 
-### Результат
+- Generator даёт базовый boilerplate без security-слоя (SSRF, rate limit, hostname validation, BaseResponse normalization, errorStackTrace stripping, credential context);
+- ручной код полностью контролируется и проходит CI-проверки `validate.cjs`;
+- генерированный код потребовал бы столько же доработок, сколько написание с нуля, но с дополнительным ограничением по структуре Generator-а.
 
-- Воспроизводимый baseline от Postman Generator.
-- Локальный STDIO-сервер стартует без реального ключа и сообщает понятную configuration error.
+### Что фактически сделано
 
-> Этот шаг нельзя полностью выполнить через доступный Postman MCP: выбор запросов и скачивание ZIP выполняются в интерфейсе Generator.
+- `src/index.js` — STDIO MCP-сервер, 78 tool handlers, error handling.
+- `src/upstream.js` — HTTP-клиент с SSRF-защитой, DNS validation, rate limiter (10 rps, 4 concurrent), BaseResponse isSuccess=false → error, errorStackTrace stripping, no redirects.
+- `src/tool-definitions.js` — загрузка 78 tool definitions из manifest + normalized spec, body/query mapping, required overrides.
+- `src/credential-context.js` — request/session-scoped credential context из env vars, без глобального состояния.
+- Локальный STDIO-сервер стартует и работает (подтверждено live-вызовами 2026-08-22).
+
+### Результат — этап 3
+
+- Hand-written MCP-сервер работает локально, проходит `validate.cjs` (78 операций, 35+24+17+2).
+- Postman MCP Generator не используется и не требуется для текущей архитектуры.
+- Postman Collection остаётся нужна только для Public API Network (документация + listing в MCP Catalog), не для генерации кода.
 
 ## Этап 4. Усиление сервера
 
 **Срок:** дни 4–5.
 
-### Действия
+### Действия — этап 4
 
 - Удалить глобальное хранение key/domain; внедрить request/session-scoped credential context.
 - Для STDIO читать key/domain из локальной конфигурации клиента.
@@ -133,7 +139,7 @@ updated: 2026-08-22
 - Добавить health/readiness endpoints, graceful shutdown и Docker image без root-пользователя.
 - Не добавлять server-side параметр `confirm=true`; подтверждения остаются у клиента.
 
-### Результат
+### Результат — этап 4
 
 - Stateless сервер готов к mock-тестам и безопасному локальному пилоту.
 - Один процесс может обслуживать разные школы без общего credential state.
@@ -142,7 +148,7 @@ updated: 2026-08-22
 
 **Срок:** дни 6–7.
 
-### Действия
+### Действия — этап 5
 
 - Сначала проверить коллекцию в Postman только с ключом из Local Vault.
 - Подключить STDIO-сервер в локальном Cursor; auto-run выключить.
@@ -153,7 +159,24 @@ updated: 2026-08-22
 - Live write/destructive тесты проводить только после Gate B, на disposable fixtures и с заранее записанным rollback/cleanup.
 - Провести негативные и параллельные тесты из раздела [[PLAN#Обязательная программа проверок|Обязательная программа проверок]].
 
-### Результат
+### Личный HTTP-стенд Руслана (вне официального staging/production)
+
+Параллельно с локальным STDIO-пилотом поднимается личный HTTP-стенд Руслана на `https://edvibe.sungurov.com/mcp` для удалённого тестирования через интернет. Это **не** staging/production из официального плана (Gate D не затрагивается, потому что это не `mcp-staging.edvibe.com` / `mcp.edvibe.com`, не принадлежит Edvibe).
+
+Параметры стенда:
+
+- поддомен `edvibe.sungurov.com`, A-запись → `185.180.230.233`;
+- Nginx Proxy Manager: Proxy Host `edvibe.sungurov.com` → `host.docker.internal:9000`, SSL Let's Encrypt, Force SSL, Websockets Support;
+- сервер `185.180.230.233`, путь на диске `/var/www/edvibe.sungurov.com/edvibe-school-mcp/`;
+- MCP-сервер запускается как systemd-сервис `edvibe-mcp.service` на порту 9000, от имени непривилегированного пользователя;
+- авторизация доступа — вариант A (см. `CONTEXT.md` → «Авторизация доступа к HTTP-endpoint»): без отдельного access-токена, единственный ключ — `EDVIBE_API_KEY`, который клиент передаёт в `Authorization: Bearer <key>`; MCP-сервер снимает `Bearer ` и использует его же для upstream-вызова к Edvibe;
+- `X-Edvibe-School-Domain: <hostname>` передаётся клиентом в каждом запросе — без него сервер не знает, к какому домену школы обращаться upstream;
+- `/healthz` endpoint для проверок NPM/systemd (не раскрывает конфигурацию);
+- секреты не хранятся на сервере: ни в `.env`, ни в systemd unit, ни в коде. Ключ и домен приходят в каждом запросе от клиента.
+
+Стенд используется только для личного пилота Руслана и не публикуется. После официальной передачи Edvibe (Gate C/D) стенд сворачивается или заменяется на `mcp-staging.edvibe.com`.
+
+### Результат — этап 5
 
 - Личный пилот подтверждён отдельно для Postman, Cursor и Codex.
 - Зафиксированы фактические ограничения клиента и API, а не только прохождение schema validation.
@@ -162,7 +185,7 @@ updated: 2026-08-22
 
 **Срок:** неделя 2.
 
-### Действия
+### Действия — этап 6
 
 - Провести review с product/engineering и подтвердить поддержку всех 78 операций.
 - Разрешить конфликты Swagger/help center с Димой/Полиной.
@@ -175,7 +198,7 @@ updated: 2026-08-22
 - Получить от Edvibe authoritative registry/resolver обычных и White Label доменов; без него staging/public multi-tenant rollout заблокирован.
 - Отдельно согласовать public enablement `LoginPupil`/`LoginTeacher` и риск сохранения login-токена в истории MCP-клиента.
 
-### Результат
+### Результат — этап 6
 
 - Staging принадлежит Edvibe и проходит контрактные, security и клиентские проверки.
 - Все спорные операции имеют зафиксированного product owner и публичную формулировку.
@@ -188,7 +211,7 @@ updated: 2026-08-22
 
 5–10 школ Edvibe/ProgressMe Pro, включая обычные Edvibe-домены и White Label.
 
-### Действия
+### Действия — этап 7
 
 - Дать короткую английскую инструкцию подключения для Cursor и Codex.
 - Предупредить, что ключ может показываться только при создании, а его перевыпуск требует заменить локальный secret без переустановки MCP.
@@ -211,19 +234,17 @@ updated: 2026-08-22
 
 ## Этап 8. Публичный запуск
 
-### Действия
+### Действия — этап 8
 
 - После Gate D развернуть production на `https://mcp.edvibe.com/mcp`.
 - Провести production smoke tests только read-only операциями.
 - Опубликовать англоязычные onboarding, security/privacy notes, tool catalogue, troubleshooting и status/support contacts.
-- Перевести Postman workspace/collection под официальный publisher profile Edvibe и подтвердить домен.
-- После Gate E убрать временные метки `experimental/unofficial`.
 - После Gate F включить `LoginPupil` и `LoginTeacher`; до recorded product/security approval обе операции остаются в контракте, но выключены на public endpoint.
-- Подать сервер в Postman MCP Catalog через официальный процесс Postman, включая обращение на `api-network@postman.com`.
 - Подготовить rollback/kill switch для отдельных инструментов и всей версии сервера.
 - Опубликовать changelog и правила версионирования несовместимых изменений.
+- **Опционально:** если Edvibe решит, что Postman MCP Catalog нужен для discoverability — перевести Postman workspace/collection под официальный publisher profile Edvibe, подтвердить домен и подать сервер в Catalog через `api-network@postman.com`. Onboarding через help center/инструкцию работает без этого шага.
 
-### Результат
+### Результат — этап 8
 
 - Официальный публичный Edvibe MCP доступен по Edvibe-домену и сопровождается командой Edvibe.
 - В v1 onboarding явно указан Pro/API-enabled scope; расширение на остальные тарифы зависит от отдельного решения Edvibe о доступности School API.
@@ -287,7 +308,7 @@ updated: 2026-08-22
 
 Публичная версия считается готовой только когда одновременно выполнено следующее:
 
-- repository, deployment и Postman publisher принадлежат Edvibe;
+- repository и deployment принадлежат Edvibe;
 - all-78 contract подтверждён Edvibe и проходит CI;
 - staging и production прошли security review;
 - Cursor и Codex прошли end-to-end проверку;
@@ -295,4 +316,5 @@ updated: 2026-08-22
 - документация на английском опубликована;
 - секреты и PII не обнаружены;
 - monitoring, support, incident response и rollback назначены конкретным владельцам;
-- получены Gates A–F, включая recorded approver для двух sensitive login tools.
+- получены Gates B–D и F, включая recorded approver для двух sensitive login tools.
+- Postman MCP Catalog — опционально, по решению Edvibe.

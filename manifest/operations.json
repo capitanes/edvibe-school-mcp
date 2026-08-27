@@ -781,7 +781,7 @@
         "GroupClassPupils"
       ],
       "summary": "Добавить учеников в групповой класс",
-      "description": "Add pupils to a group class.",
+      "description": "Add pupils to a group class. Adding a pupil to a group class activates the pupil and consumes the school's tariff limit of activated students. The limit depends on the school's tariff plan. Exceeding it returns HTTP 400 \"The number of activated students has been exceeded\".",
       "hasBody": true,
       "bodyRequired": false,
       "bodyRequiredFields": [],
@@ -2092,7 +2092,7 @@
         "Pupils"
       ],
       "summary": "Удалить ученика",
-      "description": "Delete a pupil.\n\nWARNING: Destructive: removes the pupil. Requires client-side approval.",
+      "description": "Delete a pupil. The pupil must be unlinked from all classes first: remove from group classes via GroupClassPupilsDelete and delete individual classes via IndividualClassesDelete. Upstream returns HTTP 400 \"Pupil have classes\" if any class link remains.\n\nWARNING: Destructive: removes the pupil. Requires client-side approval.",
       "hasBody": false,
       "bodyRequired": false,
       "bodyRequiredFields": [],

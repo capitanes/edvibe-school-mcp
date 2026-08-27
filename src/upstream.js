@@ -2,11 +2,13 @@
 //
 // Security features:
 //   - Hostname validation (HTTPS only, no IP literals, no private ranges)
-//   - Per-key rate limiting (10 rps, max 4 concurrent)
+//   - Per-key rate limiting (10 rps, max 4 concurrent per API key)
 //   - BaseResponse.isSuccess=false → error
 //   - errorStackTrace stripped from all responses
 //   - No redirects followed
 //   - Fixed base path /school-api
+//   - HTTP keep-alive for connection reuse
+//   - DNS resolution cache (per hostname, 60s TTL)
 
 import https from "https";
 import { URL } from "url";
@@ -16,6 +18,34 @@ const BASE_PATH = "/school-api";
 const RATE_LIMIT_RPS = 10;
 const MAX_CONCURRENT = 4;
 const REQUEST_TIMEOUT_MS = 30000;
+const DNS_CACHE_TTL_MS = 60_000;
+
+// Shared keep-alive agent: reuses TCP+TLS connections to upstream.
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+  maxSockets: 100,
+  maxFreeSockets: 10,
+  timeout: REQUEST_TIMEOUT_MS,
+});
+
+// --- Per-key rate limiter registry ---
+
+const limiterRegistry = new Map();
+
+/**
+ * Get or create a RateLimiter for a given API key.
+ * Each school (key) gets its own limiter, so schools don't block each other.
+ * @param {string} apiKey
+ * @returns {RateLimiter}
+ */
+export function getLimiter(apiKey) {
+  let limiter = limiterRegistry.get(apiKey);
+  if (!limiter) {
+    limiter = new RateLimiter();
+    limiterRegistry.set(apiKey, limiter);
+  }
+  return limiter;
+}
 
 // --- Hostname validation ---
 
@@ -37,6 +67,27 @@ function isIPLiteral(hostname) {
 
 function isPrivateIP(ip) {
   return PRIVATE_IP_PATTERNS.some((p) => p.test(ip));
+}
+
+// --- DNS resolution cache ---
+
+const dnsCache = new Map();
+
+/**
+ * Cached DNS resolution with TTL.
+ * Prevents redundant DNS lookups on every request while still protecting
+ * against DNS rebinding (cache entry expires after DNS_CACHE_TTL_MS).
+ * @param {string} hostname
+ * @returns {Promise<string[]>}
+ */
+async function resolveHostname(hostname) {
+  const cached = dnsCache.get(hostname);
+  if (cached && Date.now() - cached.timestamp < DNS_CACHE_TTL_MS) {
+    return cached.addrs;
+  }
+  const addrs = await dns.resolve4(hostname);
+  dnsCache.set(hostname, { addrs, timestamp: Date.now() });
+  return addrs;
 }
 
 /**
@@ -65,7 +116,7 @@ export async function validateHostname(hostname) {
   // DNS resolution check (protects against DNS rebinding and private IPs)
   let addrs;
   try {
-    addrs = await dns.resolve4(h);
+    addrs = await resolveHostname(h);
   } catch (e) {
     throw new Error(`DNS resolution failed for ${h}: ${e.message}`);
   }
@@ -119,14 +170,15 @@ function sleep(ms) {
  * @param {object} ctx - Credential context { apiKey, schoolDomain }
  * @param {string} method - HTTP method
  * @param {string} apiPath - API path starting with /api/
- * @param {object} options - { queryParams, body, limiter }
+ * @param {object} options - { queryParams, body }
  * @returns {Promise<object>} - Parsed JSON response (BaseResponse)
  */
 export async function callUpstream(ctx, method, apiPath, options = {}) {
   if (!ctx?.apiKey) throw new Error("Missing API key in credential context.");
   if (!ctx?.schoolDomain) throw new Error("Missing school domain in credential context.");
 
-  const limiter = options.limiter || new RateLimiter();
+  // Per-key rate limiter: each school gets its own 10 rps / 4 concurrent.
+  const limiter = getLimiter(ctx.apiKey);
   await limiter.acquire();
 
   try {
@@ -151,6 +203,7 @@ export async function callUpstream(ctx, method, apiPath, options = {}) {
       },
       timeout: REQUEST_TIMEOUT_MS,
       redirect: "manual", // never follow redirects
+      agent: httpsAgent, // keep-alive: reuse TCP+TLS connections
     };
 
     // Always serialize the body when the operation declares one.
