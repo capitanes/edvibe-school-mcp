@@ -153,8 +153,75 @@ Read-only инспекция и локальные mock-тесты разреш�
 
 ## Документация и статус
 
-- Всегда явно разделяй: подготовлено локально, развёрнуто на staging, развёрнуто в production. Postman-публикация — опциональный отдельный статус.
+- Всегда явно разделяй: подготовлено локально, развёрнуто на личном HTTP-стенде, развёрнуто на staging, развёрнуто в production. Postman-публикация — опциональный отдельный статус.
 - Не называй сервер готовым до прохождения проверок и approval gates из `PLAN.md`.
 - После устойчивого изменения решения обновляй `CONTEXT.md`, `PLAN.md`, `README.md` и при необходимости этот `AGENTS.md`.
 - Фиксируй дату и источник изменений OpenAPI.
 - Сохраняй handoff в состоянии, при котором новый агент может продолжить без истории чата и без доступа к секретам.
+
+## Деплой и синхронизация
+
+### Источник истины
+
+Локальный репозиторий на машине Руслана (`/home/ruslan/Documents/Projects/edvibe-school-mcp/`) — единственный источник истины для кода. GitHub-репозиторий `github.com/capitanes/edvibe-school-mcp` (приватный) — зеркальная копия `main`. Сервер `185.180.230.233` — consumer, подтягивает изменения через `git pull`.
+
+### Где что живёт
+
+| Место | Путь / URL | Роль |
+|---|---|---|
+| Локально | `/home/ruslan/Documents/Projects/edvibe-school-mcp/` | источник истины, правки кода, коммиты |
+| GitHub | `github.com/capitanes/edvibe-school-mcp` (private) | зеркальная копия `main`, deploy key для сервера |
+| Сервер | `/var/www/edvibe.sungurov.com/edvibe-school-mcp/` | `git clone` от GitHub, runtime через systemd |
+
+### Flow обновления кода
+
+1. Внеси правки локально в `/home/ruslan/Documents/Projects/edvibe-school-mcp/`.
+2. Закоммить: `git add -A && git commit -m "описание"`.
+3. Запусти деплой: `./scripts/deploy.sh`.
+
+`deploy.sh` автоматически:
+- `git push origin main` — пушит на GitHub;
+- SSH на сервер `185.180.230.233`;
+- `git pull --ff-only origin main` — подтягивает изменения на сервере;
+- `npm ci --omit=dev` — обновляет зависимости при изменении `package.json` / `package-lock.json`;
+- `chown -R www-data:www-data` — восстанавливает права;
+- `systemctl restart edvibe-mcp` — перезапускает сервис;
+- `curl http://localhost:9000/healthz` — проверяет, что сервер поднялся.
+
+Если `deploy.sh` запрашивает пароль SSH — настрой `ssh-copy-id root@185.180.230.233` для беспарольного доступа.
+
+### Проверка после деплоя
+
+```bash
+# Локально (снаружи через NPM):
+curl https://edvibe.sungurov.com/healthz
+# ожидание: {"status":"ok"}
+
+# MCP-протокол:
+curl -s -X POST https://edvibe.sungurov.com/mcp \
+  -H "Authorization: Bearer <EDVIBE_API_KEY>" \
+  -H "X-Edvibe-School-Domain: edvibe.com" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | grep -o '"name":"[^"]*"' | wc -l
+# ожидание: 78
+```
+
+### Откат на сервере
+
+```bash
+ssh root@185.180.230.233 "cd /var/www/edvibe.sungurov.com/edvibe-school-mcp && git checkout <hash> && npm ci --omit=dev && systemctl restart edvibe-mcp"
+```
+
+### Что не синхронизируется автоматически
+
+- `node_modules/` — в `.gitignore`, устанавливается отдельно на сервере через `npm ci --omit=dev` внутри `deploy.sh`.
+- `.env` — в `.gitignore`, на сервере не используется (секреты приходят в заголовках каждого запроса).
+- `web/` — в `.gitignore`, локальная тестовая папка.
+- `logs/` — в `.gitignore`, runtime-логи на сервере идут в `journalctl`.
+
+### Чего нельзя делать
+
+- Не правь код напрямую на сервере — изменения потеряются при следующем `git pull`. Все правки — локально, через коммит и `deploy.sh`.
+- Не делай `git push --force` без необходимости — сервер использует `git pull --ff-only`, и force-push сломает ff-only.
+- Не коммить секреты (API-ключи, токены) — `AGENTS.md` → «Секреты и персональные данные».
