@@ -168,7 +168,7 @@ Read-only инспекция и локальные mock-тесты разреш�
 ### Где что живёт
 
 | Место | Путь / URL | Роль |
-|---|---|---|
+| --- | --- | --- |
 | Локально | `/home/ruslan/Documents/Projects/edvibe-school-mcp/` | источник истины, код, лендинг (`web/`), коммиты |
 | GitHub | `github.com/capitanes/edvibe-school-mcp` (private) | зеркальная копия `main`, deploy key для сервера |
 | Сервер | `/var/www/edvibe.sungurov.com/edvibe-school-mcp/` | `git clone` от GitHub, runtime через systemd + лендинг (`web/`) в Docker |
@@ -180,6 +180,7 @@ Read-only инспекция и локальные mock-тесты разреш�
 3. Запусти деплой: `./scripts/deploy.sh`.
 
 `deploy.sh` автоматически:
+
 - `git push origin main` — пушит на GitHub;
 - SSH на сервер `185.180.230.233`;
 - `git pull --ff-only origin main` — подтягивает изменения на сервере;
@@ -217,7 +218,6 @@ ssh root@185.180.230.233 "cd /var/www/edvibe.sungurov.com/edvibe-school-mcp && g
 
 - `node_modules/` — в `.gitignore`, устанавливается отдельно на сервере через `npm ci --omit=dev` внутри `deploy.sh`.
 - `.env` — в `.gitignore`, на сервере не используется (секреты приходят в заголовках каждого запроса).
-- `web/` — в `.gitignore`, локальная тестовая папка.
 - `logs/` — в `.gitignore`, runtime-логи на сервере идут в `journalctl`.
 - Документация (`AGENTS.md`, `CONTEXT.md`, `PLAN.md`, `README.md`), upstream OpenAPI snapshot, normalized spec, Postman-коллекция, скрипты генерации/валидации и GitHub Actions workflow — **осознанно остаются в репозитории и на сервере** во время личного пилота. Они не нужны для runtime (`node src/index.js` их не читает), но вес ~162 KB не критичен. При передаче Edvibe (Gate C/D) и переходе на staging/production — настроить `git sparse-checkout` или Docker-образ только с runtime-файлами (`src/`, `manifest/operations.json`, `package.json`, `package-lock.json`). См. `PLAN.md` → Этап 6.
 
@@ -225,19 +225,22 @@ ssh root@185.180.230.233 "cd /var/www/edvibe.sungurov.com/edvibe-school-mcp && g
 
 После любых правок в файлах репозитория `/home/ruslan/Documents/Projects/edvibe-school-mcp/` агент **обязан** предложить Руслану выбор из трёх вариантов и пояснить, где в итоге окажутся изменения при каждом варианте:
 
-**Вариант 1 — только закоммитить (локально)**
+#### Вариант 1 — только закоммитить (локально)
+
 - Изменения сохраняются в локальной git-истории (`git commit`).
 - На GitHub — старая версия (пуш не делается).
 - На сервере — старая версия (сервер не трогается).
 - Когда использовать: когда правки промежуточные, хочешь накопить несколько коммитов и запушить позже одним деплоем.
 
-**Вариант 2 — закоммитить и запушить на GitHub**
+#### Вариант 2 — закоммитить и запушить на GitHub
+
 - Изменения сохраняются в локальной git-истории (`git commit`).
 - Изменения уходят на GitHub (`git push origin main`).
 - На сервере — старая версия (сервер не трогается).
 - Когда использовать: когда хочешь сохранить код на GitHub (бэкап, видимость для других), но сервер обновлять не нужно — например, правка документации, которая не влияет на runtime.
 
-**Вариант 3 — закоммитить, запушить и задеплоить на сервер**
+#### Вариант 3 — закоммитить, запушить и задеплоить на сервер
+
 - Изменения сохраняются в локальной git-истории (`git commit`).
 - Изменения уходят на GitHub (`git push origin main`).
 - Сервер подтягивает изменения, перезапускает сервис, проверяет health (`./scripts/deploy.sh`).
