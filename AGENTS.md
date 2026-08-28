@@ -169,9 +169,9 @@ Read-only инспекция и локальные mock-тесты разреш�
 
 | Место | Путь / URL | Роль |
 |---|---|---|
-| Локально | `/home/ruslan/Documents/Projects/edvibe-school-mcp/` | источник истины, правки кода, коммиты |
+| Локально | `/home/ruslan/Documents/Projects/edvibe-school-mcp/` | источник истины, код, лендинг (`web/`), коммиты |
 | GitHub | `github.com/capitanes/edvibe-school-mcp` (private) | зеркальная копия `main`, deploy key для сервера |
-| Сервер | `/var/www/edvibe.sungurov.com/edvibe-school-mcp/` | `git clone` от GitHub, runtime через systemd |
+| Сервер | `/var/www/edvibe.sungurov.com/edvibe-school-mcp/` | `git clone` от GitHub, runtime через systemd + лендинг (`web/`) в Docker |
 
 ### Flow обновления кода
 
