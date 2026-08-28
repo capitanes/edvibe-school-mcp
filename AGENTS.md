@@ -198,6 +198,10 @@ Read-only инспекция и локальные mock-тесты разреш�
 curl https://edvibe.sungurov.com/healthz
 # ожидание: {"status":"ok"}
 
+# Лендинг (проверка отдачи HTML):
+curl -s https://edvibe.sungurov.com/ | grep -c "Edvibe MCP"
+# ожидание: > 0
+
 # MCP-протокол:
 curl -s -X POST https://edvibe.sungurov.com/mcp \
   -H "Authorization: Bearer <EDVIBE_API_KEY>" \
@@ -207,6 +211,15 @@ curl -s -X POST https://edvibe.sungurov.com/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | grep -o '"name":"[^"]*"' | wc -l
 # ожидание: 78
 ```
+
+### Как устроен лендинг (`web/`)
+
+Статические файлы лендинга (`web/index.html`, `web/styles.css`) отдаются через Docker-контейнер `edvibe-landing` (`nginx:alpine`), который монтирует папку `/var/www/edvibe.sungurov.com/edvibe-school-mcp/web` в режиме read-only:
+
+- Контейнер слушает внутренний порт `8082` на хосте.
+- Nginx Proxy Manager направляет запросы к корню `/` и статике (`.css`, `.js`, шрифты, картинки) на `http://172.18.0.1:8082`.
+- Запросы к `/mcp` проксируются на Node.js сервис (порт `9000`).
+- При выполнении `deploy.sh` команда `git pull` обновляет файлы в `web/` на сервере, и Nginx сразу отдаёт обновлённую статику без перезапуска контейнера.
 
 ### Откат на сервере
 
