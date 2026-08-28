@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edvibe MCP — School API в Cursor и Codex</title>
+  <meta name="description" content="Подключите Cursor или Codex к Edvibe School API. Получайте данные о расписании, учениках и преподавателях и подтверждайте изменения перед выполнением.">
+  <meta name="keywords" content="Edvibe, MCP, School API, Cursor, Codex">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#1d172b">
+  <meta property="og:title" content="Edvibe MCP — School API в Cursor и Codex">
+  <meta property="og:description" content="Личный пилот MCP-сервера для работы с данными школы Edvibe через AI-ассистента.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Перейти к содержанию</a>
+
+  <nav class="nav" aria-label="Основная навигация">
+    <div class="container nav-inner">
+      <a class="brand" href="#main-content" aria-label="Edvibe MCP — в начало">
+        <span class="brand-mark" aria-hidden="true">E</span>
+        <span>Edvibe MCP</span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#connect">Подключение</a></li>
+        <li><a href="#scenarios">Примеры</a></li>
+        <li><a href="#status">Безопасность</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+
+      <a class="nav-action" href="#connect">Подключить</a>
+      <button class="nav-burger" id="navBurger" type="button" aria-label="Открыть меню" aria-controls="navLinks" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="status-label"><span aria-hidden="true"></span> Личный неофициальный пилот</p>
+          <h1 id="hero-title">Подключите Edvibe к Cursor или Codex</h1>
+          <p class="hero-lead">
+            Получайте данные о расписании, учениках и преподавателях через обычный диалог. Edvibe MCP открывает операции School API, а изменения выполняет после вашего подтверждения.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#connect">Открыть инструкцию</a>
+            <a class="button button-ghost" href="#scenarios">Посмотреть примеры</a>
+          </div>
+          <ul class="hero-facts" aria-label="Основные сведения">
+            <li><strong>78 методов</strong><span>расписание, ученики, группы, пакеты и преподаватели</span></li>
+            <li><strong>Тариф Pro</strong><span>с доступом к School API</span></li>
+            <li><strong>5 минут</strong><span>подключение к вашему агенту</span></li>
+          </ul>
+        </div>
+
+        <div class="prompt-demo" aria-label="Пример работы Edvibe MCP в чате">
+          <div class="prompt-demo-head">
+            <div class="prompt-demo-dots" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="prompt-demo-status">
+              <span class="status-dot"></span>
+              <span>edvibe-mcp · подключено</span>
+            </div>
+            <span class="prompt-demo-badge">чтение API</span>
+          </div>
+          <div class="prompt-demo-body">
+            <div class="prompt-user-msg">
+              <span class="msg-author">Вы</span>
+              <p>Найди учеников, у которых осталось 0–1 урок в пакете, но нет будущих оплат.</p>
+            </div>
+            <div class="prompt-ai-msg">
+              <div class="ai-msg-header">
+                <span class="msg-author ai-badge">AI Ассистент</span>
+                <span class="msg-time">вызов edvibe_get_students</span>
+              </div>
+              <p class="ai-intro">Нашёл <strong>3 учеников</strong> с остатком &le; 1 урока без активных оплат:</p>
+              <ul class="ai-results-list">
+                <li>
+                  <span class="student-name">Анна Смирнова</span>
+                  <span class="student-meta">Остаток: <strong>0 уроков</strong> · Преп: Елена В.</span>
+                </li>
+                <li>
+                  <span class="student-name">Максим Орлов</span>
+                  <span class="student-meta">Остаток: <strong>1 урок</strong> · Преп: Дмитрий К.</span>
+                </li>
+                <li>
+                  <span class="student-name">София Ли</span>
+                  <span class="student-meta">Остаток: <strong>1 урок</strong> · Преп: Ольга М.</span>
+                </li>
+              </ul>
+              <div class="prompt-audit-footer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Только чтение данных школы · База Edvibe не изменялась</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="fit-note" aria-label="Кому подходит Edvibe MCP">
+      <div class="container fit-note-inner">
+        <strong>Кому подойдёт</strong>
+        <p>Владельцам и старшим администраторам, которые хотят убрать рутину с расписанием, остатками пакетов и отчётами.</p>
+      </div>
+    </section>
+
+    <section id="connect" class="section section-white">
+      <div class="container">
+        <div class="section-heading split-heading">
+          <div>
+            <p class="eyebrow">Подключение</p>
+            <h2>Четыре шага</h2>
+          </div>
+          <p>Настройка занимает 5 минут: вам понадобятся ключ из личного кабинета и готовый блок настроек для редактора.</p>
+        </div>
+
+        <ol class="steps">
+          <li>
+            <span>01</span>
+            <h3>Проверьте раздел в кабинете</h3>
+            <p>Откройте «Настройки» в вашей школе Edvibe и убедитесь, что раздел API доступен для выпуска ключа.</p>
+          </li>
+          <li>
+            <span>02</span>
+            <h3>Получите API-ключ</h3>
+            <p>Создайте ключ в настройках школы. Не отправляйте его в чат и не добавляйте в общие документы.</p>
+          </li>
+          <li>
+            <span>03</span>
+            <h3>Добавьте в настройки MCP</h3>
+            <p>Выберите клиент ниже, скопируйте JSON или TOML в конфигурационный файл MCP и укажите свой ключ и домен.</p>
+          </li>
+          <li>
+            <span>04</span>
+            <h3>Проверьте чтение</h3>
+            <p>После перезапуска клиента попросите показать занятия на сегодня. Это не меняет данные школы.</p>
+          </li>
+        </ol>
+
+        <div class="config" aria-label="Конфигурации клиентов">
+          <div class="config-bar">
+            <div class="config-tabs" role="tablist" aria-label="Выберите клиент">
+              <button class="config-tab active" type="button" role="tab" id="trigger-cursor" aria-selected="true" aria-controls="tab-cursor" data-tab="cursor">Cursor</button>
+              <button class="config-tab" type="button" role="tab" id="trigger-codex" aria-selected="false" aria-controls="tab-codex" data-tab="codex" tabindex="-1">Codex</button>
+              <button class="config-tab" type="button" role="tab" id="trigger-devin" aria-selected="false" aria-controls="tab-devin" data-tab="devin" tabindex="-1">Devin</button>
+            </div>
+            <button class="copy-button" type="button" data-copy-config aria-live="polite" aria-label="Копировать выбранную конфигурацию">Копировать</button>
+          </div>
+
+          <div class="config-panel active" id="tab-cursor" role="tabpanel" aria-labelledby="trigger-cursor">
+<pre><code><span class="comment">// ~/.cursor/mcp.json — удалённое подключение</span>
+{
+  <span class="key">"mcpServers"</span>: {
+    <span class="key">"edvibe"</span>: {
+      <span class="key">"type"</span>: <span class="string">"streamable-http"</span>,
+      <span class="key">"url"</span>: <span class="string">"https://edvibe.sungurov.com/mcp"</span>,
+      <span class="key">"headers"</span>: {
+        <span class="key">"Authorization"</span>: <span class="string">"Bearer &lt;EDVIBE_API_KEY&gt;"</span>, <span class="comment">// замените только &lt;EDVIBE_API_KEY&gt; на ваш ключ. Ключ можно сгенерировать в личном кабинете в разделе API: https://edvibe.com/cabinet/school/settings/api?tab=settings</span>
+        <span class="key">"X-Edvibe-School-Domain"</span>: <span class="string">"edvibe.com"</span> <span class="comment">// для White Label замените на свой домен</span>
+      }
+    }
+  }
+}</code></pre>
+          </div>
+
+          <div class="config-panel" id="tab-codex" role="tabpanel" aria-labelledby="trigger-codex">
+<pre><code><span class="comment"># ~/.codex/config.toml — удалённое подключение</span>
+[mcp_servers.edvibe]
+type = <span class="string">"streamable-http"</span>
+url = <span class="string">"https://edvibe.sungurov.com/mcp"</span>
+
+[mcp_servers.edvibe.headers]
+Authorization = <span class="string">"Bearer &lt;EDVIBE_API_KEY&gt;"</span> <span class="comment"># замените только &lt;EDVIBE_API_KEY&gt; на ваш ключ. Ключ можно сгенерировать в личном кабинете в разделе API: https://edvibe.com/cabinet/school/settings/api?tab=settings</span>
+X-Edvibe-School-Domain = <span class="string">"edvibe.com"</span> <span class="comment"># для White Label замените на свой домен</span></code></pre>
+          </div>
+
+          <div class="config-panel" id="tab-devin" role="tabpanel" aria-labelledby="trigger-devin">
+<pre><code><span class="comment">// ~/.config/devin/mcp_config.json — удалённое подключение</span>
+{
+  <span class="key">"edvibe"</span>: {
+    <span class="key">"type"</span>: <span class="string">"streamableHttp"</span>,
+    <span class="key">"url"</span>: <span class="string">"https://edvibe.sungurov.com/mcp"</span>,
+    <span class="key">"headers"</span>: {
+      <span class="key">"Authorization"</span>: <span class="string">"Bearer &lt;EDVIBE_API_KEY&gt;"</span>, <span class="comment">// замените только &lt;EDVIBE_API_KEY&gt; на ваш ключ. Ключ можно сгенерировать в личном кабинете в разделе API: https://edvibe.com/cabinet/school/settings/api?tab=settings</span>
+      <span class="key">"X-Edvibe-School-Domain"</span>: <span class="string">"edvibe.com"</span> <span class="comment">// для White Label замените на свой домен</span>
+    }
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <p class="config-note"><strong>edvibe.com</strong> — домен по умолчанию. Если у вас подключён White Label, замените его на свой домен школы (без <code>https://</code>, порта и пути). Сервер — личный пилотный стенд, а не официальный сервис Edvibe.</p>
+      </div>
+    </section>
+
+    <section id="scenarios" class="section">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Примеры</p>
+          <h2>Что можно спросить</h2>
+          <p>Формулируйте задачу обычным текстом. Ассистент сам выберет нужные операции School API.</p>
+        </div>
+
+        <div class="scenario-layout">
+          <div class="scenario-list">
+            <article class="scenario-item">
+              <span class="scenario-type read">Чтение</span>
+              <p>«Покажи расписание школы на сегодня и свободные окна преподавателей»</p>
+            </article>
+            <article class="scenario-item">
+              <span class="scenario-type read">Чтение</span>
+              <p>«Найди учеников, у которых осталось не больше двух уроков»</p>
+            </article>
+            <article class="scenario-item">
+              <span class="scenario-type read">Чтение</span>
+              <p>«Собери карточку ученика: классы, преподаватели, пакет и будущие занятия»</p>
+            </article>
+            <article class="scenario-item">
+              <span class="scenario-type write">С подтверждением</span>
+              <p>«Подготовь восемь занятий по вторникам и четвергам в 18:00»</p>
+            </article>
+          </div>
+
+          <div class="video-block">
+            <iframe
+              width="560"
+              height="315"
+              src="https://www.youtube-nocookie.com/embed/bpzN1GBEDn0"
+              title="Пример работы Edvibe MCP"
+              frameborder="0"
+              loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+            <p>Короткая демонстрация: сводка, поиск проблем и подготовка изменений.</p>
+          </div>
+        </div>
+
+        <div class="plain-grid" aria-label="Основные варианты использования">
+          <article>
+            <h3>Собрать сводку</h3>
+            <p>Объединить расписание, профили и пакеты в один понятный ответ.</p>
+          </article>
+          <article>
+            <h3>Найти отклонения</h3>
+            <p>Показать учеников без занятий, остатки пакетов и пересечения в графике.</p>
+          </article>
+          <article>
+            <h3>Подготовить изменения</h3>
+            <p>Сформировать серию уроков или массовое действие и показать план до выполнения.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="section section-white">
+      <div class="container">
+        <div class="section-heading compact-heading">
+          <p class="eyebrow">Как это работает</p>
+          <h2>Один запрос — несколько операций API</h2>
+        </div>
+
+        <ol class="flow" aria-label="Схема работы Edvibe MCP">
+          <li><span>1</span><strong>Вы описываете задачу</strong><small>в Cursor или Codex</small></li>
+          <li><span>2</span><strong>Ассистент выбирает инструменты</strong><small>из 78 операций</small></li>
+          <li><span>3</span><strong>MCP обращается к School API</strong><small>с ключом вашей школы</small></li>
+          <li><span>4</span><strong>Вы получаете результат</strong><small>и подтверждаете изменения</small></li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="status" class="section">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Безопасность и контроль</p>
+          <h2>Ваши данные и ключ остаются под вашим контролем</h2>
+          <p>Сервер не сохраняет пароли и базы данных. Чтение происходит мгновенно, а любые изменения требуют вашего подтверждения в редакторе.</p>
+        </div>
+
+        <div class="status-columns">
+          <article class="status-card checked">
+            <p class="status-card-label">Безопасно по умолчанию</p>
+            <h3>Ключ и данные под защитой</h3>
+            <ul>
+              <li>Ключ хранится только на вашем компьютере в настройках клиента.</li>
+              <li>35 методов чтения работают без риска изменения данных.</li>
+              <li>Запросы отправляются по защищённому HTTPS-соединению.</li>
+              <li>Сессии разных школ строго изолированы друг от друга.</li>
+            </ul>
+          </article>
+
+          <article class="status-card pending">
+            <p class="status-card-label">Защита от случайных действий</p>
+            <h3>Ничего не меняется без вашего одобрения</h3>
+            <ul>
+              <li>Любое создание, перенос или удаление запрашивает подтверждение.</li>
+              <li>17 операций повышенного риска показывают превью затронутых записей.</li>
+              <li>Встроенный лимит защищает школу от случайной перегрузки API.</li>
+              <li>Никаких скрытых списаний уроков без вашего явного одобрения.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="tool-counts" aria-label="Классификация 78 инструментов">
+          <div><strong>35</strong><span>чтение</span></div>
+          <div><strong>24</strong><span>создание и обновление</span></div>
+          <div><strong>17</strong><span>операции повышенного риска</span></div>
+          <div><strong>2</strong><span>чувствительные операции входа</span></div>
+        </div>
+
+        <div class="security-note">
+          <h3>Ключ не нужно передавать нам</h3>
+          <p>При локальном подключении он хранится в конфигурации вашего клиента. На личном HTTP-стенде ключ приходит с конкретным запросом и не должен сохраняться в базе, логах или кэше.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="section section-white">
+      <div class="container faq-layout">
+        <div class="section-heading faq-heading">
+          <p class="eyebrow">FAQ</p>
+          <h2>Коротко о главном</h2>
+        </div>
+
+        <div class="faq-list">
+          <details>
+            <summary>Кому доступен Edvibe MCP?<span aria-hidden="true"></span></summary>
+            <p>Школам Edvibe с подключённым School API. В первой версии это школы на тарифе Pro или с отдельно открытым API-модулем.</p>
+          </details>
+          <details>
+            <summary>Это официальный сервис Edvibe?<span aria-hidden="true"></span></summary>
+            <p>Нет. Сейчас это пилотный проект. Официальный релиз ожидается после завершения всех этапов тестирования и закрытой беты.</p>
+          </details>
+          <details>
+            <summary>Может ли ассистент изменить данные?<span aria-hidden="true"></span></summary>
+            <p>Да, School API содержит операции создания, обновления и удаления. Клиент должен запросить ваше подтверждение перед записью. В пилоте рекомендуется начинать с операций чтения.</p>
+          </details>
+          <details>
+            <summary>Когда лучше использовать MCP, а когда прямую интеграцию через API?<span aria-hidden="true"></span></summary>
+            <p>MCP отлично справляется с гибкими и оперативными задачами — когда нужно быстро найти данные, перенести группы или собрать нестандартную сводку словами через чат. Но если вы ежедневно выполняете одни и те же строго регламентированные массовые операции (например, регулярную синхронизацию с CRM или фоновый биллинг), для таких сценариев надёжнее настроить прямую автоматизацию через API.</p>
+          </details>
+          <details>
+            <summary>Работает ли White Label?<span aria-hidden="true"></span></summary>
+            <p>Да. Если у вас подключён White Label и школа работает на собственном домене, просто укажите его в поле домена в настройках конфигурации MCP.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="container closing-inner">
+        <div>
+          <h2>Начните с расписания</h2>
+          <p>Подключите клиент и задайте первый read-only запрос: «Покажи занятия школы на сегодня».</p>
+        </div>
+        <div class="closing-actions">
+          <a class="button button-primary" href="#connect">Открыть инструкцию</a>
+          <a class="text-link" href="https://edvibe.com/school-api/swagger/index.html" target="_blank" rel="noopener noreferrer">Документация School API ↗</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Edvibe MCP</strong>
+        <span>Личный пилот School API × MCP</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer">О протоколе MCP</a>
+        <a href="#status">Безопасность</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.documentElement.classList.add('js');
+
+    const burger = document.getElementById('navBurger');
+    const navLinks = document.getElementById('navLinks');
+
+    function setMenu(open) {
+      navLinks.classList.toggle('open', open);
+      burger.setAttribute('aria-expanded', String(open));
+      burger.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+    }
+
+    burger.addEventListener('click', () => setMenu(!navLinks.classList.contains('open')));
+    navLinks.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('click', event => {
+      if (!event.target.closest('.nav')) setMenu(false);
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && navLinks.classList.contains('open')) {
+        setMenu(false);
+        burger.focus();
+      }
+    });
+
+    const tabButtons = [...document.querySelectorAll('[role="tab"]')];
+    const tabPanels = [...document.querySelectorAll('[role="tabpanel"]')];
+
+    function selectTab(selected) {
+      tabButtons.forEach(button => {
+        const active = button === selected;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+        button.tabIndex = active ? 0 : -1;
+      });
+      tabPanels.forEach(panel => {
+        const active = panel.id === selected.getAttribute('aria-controls');
+        panel.classList.toggle('active', active);
+        panel.hidden = !active;
+      });
+    }
+
+    tabButtons.forEach((button, index) => {
+      button.addEventListener('click', () => selectTab(button));
+      button.addEventListener('keydown', event => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let next = index;
+        if (event.key === 'ArrowLeft') next = (index - 1 + tabButtons.length) % tabButtons.length;
+        if (event.key === 'ArrowRight') next = (index + 1) % tabButtons.length;
+        if (event.key === 'Home') next = 0;
+        if (event.key === 'End') next = tabButtons.length - 1;
+        selectTab(tabButtons[next]);
+        tabButtons[next].focus();
+      });
+    });
+
+    selectTab(tabButtons.find(button => button.classList.contains('active')) || tabButtons[0]);
+
+    const copyButton = document.querySelector('[data-copy-config]');
+    copyButton.addEventListener('click', async () => {
+      const activeCode = document.querySelector('.config-panel.active pre');
+      if (!activeCode) return;
+      try {
+        await navigator.clipboard.writeText(activeCode.innerText);
+        copyButton.textContent = 'Скопировано';
+      } catch {
+        copyButton.textContent = 'Выделите код вручную';
+      }
+      setTimeout(() => { copyButton.textContent = 'Копировать'; }, 1800);
+    });
+  </script>
+</body>
+</html>

@@ -39,5 +39,6 @@ curl -sf http://localhost:9000/healthz && echo "  ok" || { echo "  ✗ health ch
 REMOTE
 
 echo "✓ Deploy complete."
-echo "  Health: https://edvibe.sungurov.com/healthz"
-echo "  MCP:    https://edvibe.sungurov.com/mcp"
+echo "  Landing: https://edvibe.sungurov.com/"
+echo "  Health:  https://edvibe.sungurov.com/healthz"
+echo "  MCP:     https://edvibe.sungurov.com/mcp"
