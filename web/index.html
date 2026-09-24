@@ -162,7 +162,8 @@
       <span class="key">"url"</span>: <span class="string">"https://edvibe.sungurov.com/mcp"</span>,
       <span class="key">"headers"</span>: {
         <span class="key">"Authorization"</span>: <span class="string">"Bearer &lt;EDVIBE_API_KEY&gt;"</span>, <span class="comment">// замените только &lt;EDVIBE_API_KEY&gt; на ваш ключ. Ключ можно сгенерировать в личном кабинете в разделе API: https://edvibe.com/cabinet/school/settings/api?tab=settings</span>
-        <span class="key">"X-Edvibe-School-Domain"</span>: <span class="string">"edvibe.com"</span> <span class="comment">// для White Label замените на свой домен</span>
+        <span class="key">"X-Edvibe-School-Domain"</span>: <span class="string">"edvibe.com"</span>, <span class="comment">// для White Label замените на свой домен</span>
+        <span class="key">"X-Edvibe-Client-Id"</span>: <span class="string">"&lt;UUID_V4_PER_INSTALLATION&gt;"</span> <span class="comment">// опционально: один UUID v4 для этой установки</span>
       }
     }
   }
@@ -177,7 +178,8 @@ url = <span class="string">"https://edvibe.sungurov.com/mcp"</span>
 
 [mcp_servers.edvibe.headers]
 Authorization = <span class="string">"Bearer &lt;EDVIBE_API_KEY&gt;"</span> <span class="comment"># замените только &lt;EDVIBE_API_KEY&gt; на ваш ключ. Ключ можно сгенерировать в личном кабинете в разделе API: https://edvibe.com/cabinet/school/settings/api?tab=settings</span>
-X-Edvibe-School-Domain = <span class="string">"edvibe.com"</span> <span class="comment"># для White Label замените на свой домен</span></code></pre>
+X-Edvibe-School-Domain = <span class="string">"edvibe.com"</span> <span class="comment"># для White Label замените на свой домен</span>
+X-Edvibe-Client-Id = <span class="string">"&lt;UUID_V4_PER_INSTALLATION&gt;"</span> <span class="comment"># опционально: один UUID v4 для этой установки</span></code></pre>
           </div>
 
           <div class="config-panel" id="tab-devin" role="tabpanel" aria-labelledby="trigger-devin">
@@ -188,14 +190,15 @@ X-Edvibe-School-Domain = <span class="string">"edvibe.com"</span> <span class="c
     <span class="key">"url"</span>: <span class="string">"https://edvibe.sungurov.com/mcp"</span>,
     <span class="key">"headers"</span>: {
       <span class="key">"Authorization"</span>: <span class="string">"Bearer &lt;EDVIBE_API_KEY&gt;"</span>, <span class="comment">// замените только &lt;EDVIBE_API_KEY&gt; на ваш ключ. Ключ можно сгенерировать в личном кабинете в разделе API: https://edvibe.com/cabinet/school/settings/api?tab=settings</span>
-      <span class="key">"X-Edvibe-School-Domain"</span>: <span class="string">"edvibe.com"</span> <span class="comment">// для White Label замените на свой домен</span>
+      <span class="key">"X-Edvibe-School-Domain"</span>: <span class="string">"edvibe.com"</span>, <span class="comment">// для White Label замените на свой домен</span>
+      <span class="key">"X-Edvibe-Client-Id"</span>: <span class="string">"&lt;UUID_V4_PER_INSTALLATION&gt;"</span> <span class="comment">// опционально: один UUID v4 для этой установки</span>
     }
   }
 }</code></pre>
           </div>
         </div>
 
-        <p class="config-note"><strong>edvibe.com</strong> — домен по умолчанию. Если у вас подключён White Label, замените его на свой домен школы (без <code>https://</code>, порта и пути). Сервер — личный пилотный стенд, а не официальный сервис Edvibe.</p>
+        <p class="config-note"><strong>edvibe.com</strong> — домен по умолчанию. Если у вас подключён White Label, замените его на свой домен школы (без <code>https://</code>, порта и пути). <code>X-Edvibe-Client-Id</code> опционален: сгенерируйте UUID v4 один раз для каждой установки; старые конфиги без него продолжают работать. Сервер — личный пилотный стенд, а не официальный сервис Edvibe.</p>
       </div>
     </section>
 

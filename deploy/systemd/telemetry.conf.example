@@ -1,0 +1,20 @@
+# /etc/systemd/system/edvibe-mcp.service.d/telemetry.conf
+#
+# First rollout: deploy with both flags false. Do not enable collection or the
+# dashboard until the credentials, private data directory and canary checks are
+# approved and ready.
+
+[Service]
+Environment="TELEMETRY_ENABLED=false"
+Environment="ANALYTICS_DASHBOARD_ENABLED=false"
+Environment="TELEMETRY_IDENTITY_EPOCH=1"
+Environment="TELEMETRY_DATABASE_PATH=/var/lib/edvibe-mcp/telemetry.sqlite"
+Environment="TELEMETRY_BACKUP_DIRECTORY=/var/lib/edvibe-mcp/backups"
+# Uncomment only after the state directory and both credential files have been
+# provisioned for the separately approved activation stage. Keeping them
+# commented lets the first flags-off rollout avoid creating telemetry state.
+# LoadCredential=telemetry_hmac_key:/etc/edvibe-mcp/credentials/telemetry_hmac_key
+# LoadCredential=analytics_password:/etc/edvibe-mcp/credentials/analytics_password
+# StateDirectory=edvibe-mcp
+# StateDirectoryMode=0700
+UMask=0077

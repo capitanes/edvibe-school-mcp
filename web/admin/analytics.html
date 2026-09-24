@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>Аналитика Edvibe MCP</title>
+    <link rel="stylesheet" href="/admin/analytics/analytics.css">
+    <script src="/admin/analytics/analytics.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">К содержанию</a>
+
+    <header class="topbar">
+      <div class="topbar__inner">
+        <div class="brand" aria-label="Edvibe MCP">
+          <span class="brand__mark" aria-hidden="true">E</span>
+          <span>
+            <strong>Edvibe MCP</strong>
+            <small>внутренняя аналитика</small>
+          </span>
+        </div>
+        <div class="topbar__actions">
+          <p class="updated-at" id="updated-at">Данные ещё не загружены</p>
+          <button class="button button--secondary" id="refresh-button" type="button">Обновить</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content" class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Личный HTTP-стенд</p>
+          <h1 id="page-title">Использование MCP без содержимого запросов</h1>
+          <p class="intro__text">Здесь хранятся только псевдонимы, технические события, инструменты, задержки и безопасные классы ошибок. API-ключи, домены, аргументы и ответы не собираются.</p>
+        </div>
+        <div class="privacy-badge" title="В отчётах нет исходных вопросов и данных School API">
+          <span class="privacy-badge__dot" aria-hidden="true"></span>
+          Без конфиденциальных данных
+        </div>
+      </section>
+
+      <section class="panel filters-panel" aria-labelledby="filters-title">
+        <div class="section-heading section-heading--compact">
+          <div>
+            <p class="eyebrow">Срез данных</p>
+            <h2 id="filters-title">Фильтры</h2>
+          </div>
+          <button class="text-button" id="reset-filters" type="button">Сбросить</button>
+        </div>
+
+        <form class="filters" id="filters-form">
+          <label class="field">
+            <span>Период</span>
+            <select id="range-filter" name="range">
+              <option value="24h">24 часа</option>
+              <option value="7d">7 дней</option>
+              <option value="30d" selected>30 дней</option>
+              <option value="90d">90 дней</option>
+              <option value="365d">365 дней</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Школа</span>
+            <input id="tenant-filter" name="tenant_id" type="text" autocomplete="off" spellcheck="false" placeholder="t_…">
+          </label>
+
+          <label class="field">
+            <span>Установка</span>
+            <input id="installation-filter" name="installation_id" type="text" autocomplete="off" spellcheck="false" placeholder="i_…">
+          </label>
+
+          <label class="field">
+            <span>Клиент</span>
+            <select id="client-filter" name="client_family">
+              <option value="">Все клиенты</option>
+              <option value="cursor">Cursor</option>
+              <option value="codex">Codex</option>
+              <option value="devin">Devin</option>
+              <option value="other">Другие</option>
+              <option value="unknown">Не определён</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Группа инструментов</span>
+            <input id="group-filter" name="tool_group" type="text" list="tool-groups" autocomplete="off" spellcheck="false" placeholder="Все группы">
+            <datalist id="tool-groups"></datalist>
+          </label>
+
+          <label class="field">
+            <span>Результат</span>
+            <select id="outcome-filter" name="outcome">
+              <option value="">Все результаты</option>
+              <option value="success">Успех</option>
+              <option value="error">Ошибка</option>
+              <option value="rejected">Отклонено</option>
+            </select>
+          </label>
+
+          <button class="button button--primary filters__submit" type="submit">Применить</button>
+        </form>
+
+        <div class="active-filters" id="active-filters" aria-live="polite"></div>
+      </section>
+
+      <div class="notice" id="notice" role="status" aria-live="polite" hidden></div>
+
+      <section aria-labelledby="summary-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Главное</p>
+            <h2 id="summary-title">Обзор использования</h2>
+          </div>
+          <p class="section-heading__note">Активность — минимум один успешный вызов School API</p>
+        </div>
+        <div class="metric-grid" id="metric-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="activity-windows-title">
+        <div class="panel__heading">
+          <div>
+            <p class="eyebrow">Сравнение периодов</p>
+            <h2 id="activity-windows-title">Активность клиентов</h2>
+          </div>
+          <p class="panel__hint">Активность — минимум один успешный вызов School API</p>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Период</th>
+                <th scope="col" class="number-cell">Активные школы</th>
+                <th scope="col" class="number-cell">Активные установки</th>
+                <th scope="col" class="number-cell">Вызовы</th>
+                <th scope="col" class="number-cell">Активные дни</th>
+              </tr>
+            </thead>
+            <tbody id="activity-windows-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="operations" aria-labelledby="operations-title">
+        <div class="section-heading section-heading--compact">
+          <div>
+            <p class="eyebrow">Состояние сбора</p>
+            <h2 id="operations-title">Телеметрия</h2>
+          </div>
+        </div>
+        <div class="operations-grid" id="operations-grid"></div>
+      </section>
+
+      <section class="dashboard-grid dashboard-grid--wide">
+        <article class="panel panel--chart" aria-labelledby="activity-title">
+          <div class="panel__heading">
+            <div>
+              <p class="eyebrow">Динамика</p>
+              <h2 id="activity-title">Вызовы инструментов</h2>
+            </div>
+            <div class="legend" aria-label="Легенда">
+              <span><i class="legend__swatch legend__swatch--primary"></i>Все вызовы</span>
+              <span><i class="legend__swatch legend__swatch--success"></i>Успешные</span>
+            </div>
+          </div>
+          <div class="bar-chart" id="activity-chart" aria-label="Динамика вызовов"></div>
+        </article>
+      </section>
+
+      <section class="panel" aria-labelledby="heatmap-title">
+        <div class="panel__heading">
+          <div>
+            <p class="eyebrow">Europe/Moscow</p>
+            <h2 id="heatmap-title">Когда используют MCP</h2>
+          </div>
+          <p class="panel__hint">День недели × час</p>
+        </div>
+        <div class="heatmap-scroll">
+          <div class="heatmap" id="usage-heatmap" aria-label="Тепловая карта использования по московскому времени"></div>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="panel" aria-labelledby="tools-title">
+          <div class="panel__heading">
+            <div>
+              <p class="eyebrow">Популярность</p>
+              <h2 id="tools-title">Инструменты</h2>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Инструмент</th>
+                  <th scope="col">Группа</th>
+                  <th scope="col" class="number-cell">Вызовы</th>
+                  <th scope="col" class="number-cell">Успех</th>
+                  <th scope="col" class="number-cell">Средняя задержка</th>
+                </tr>
+              </thead>
+              <tbody id="tools-table"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel" aria-labelledby="groups-title">
+          <div class="panel__heading">
+            <div>
+              <p class="eyebrow">Структура</p>
+              <h2 id="groups-title">Группы инструментов</h2>
+            </div>
+          </div>
+          <div class="rank-list" id="groups-list"></div>
+        </article>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="panel" aria-labelledby="errors-title">
+          <div class="panel__heading">
+            <div>
+              <p class="eyebrow">Диагностика</p>
+              <h2 id="errors-title">Классы ошибок</h2>
+            </div>
+          </div>
+          <div class="rank-list rank-list--errors" id="errors-list"></div>
+        </article>
+
+        <article class="panel" aria-labelledby="scenarios-title">
+          <div class="panel__heading">
+            <div>
+              <p class="eyebrow">Цепочки за 30 минут</p>
+              <h2 id="scenarios-title">Частые сценарии</h2>
+            </div>
+          </div>
+          <ol class="scenario-list" id="scenarios-list"></ol>
+        </article>
+      </section>
+
+      <section class="panel" aria-labelledby="clients-title">
+        <div class="panel__heading">
+          <div>
+            <p class="eyebrow">Подключения</p>
+            <h2 id="clients-title">MCP-клиенты</h2>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Клиент</th>
+                <th scope="col">Версия</th>
+                <th scope="col" class="number-cell">Установки</th>
+                <th scope="col" class="number-cell">Вызовы</th>
+                <th scope="col" class="number-cell">Успех</th>
+              </tr>
+            </thead>
+            <tbody id="clients-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel events-panel" aria-labelledby="events-title">
+        <div class="panel__heading">
+          <div>
+            <p class="eyebrow">Безопасный журнал</p>
+            <h2 id="events-title">Последние события</h2>
+          </div>
+          <p class="panel__hint">Время показано по Москве</p>
+        </div>
+        <div class="table-scroll">
+          <table class="events-table">
+            <thead>
+              <tr>
+                <th scope="col">Время</th>
+                <th scope="col">Событие</th>
+                <th scope="col">Школа</th>
+                <th scope="col">Установка</th>
+                <th scope="col">Клиент</th>
+                <th scope="col">Инструмент</th>
+                <th scope="col">Результат</th>
+                <th scope="col" class="number-cell">Задержка</th>
+              </tr>
+            </thead>
+            <tbody id="events-table"></tbody>
+          </table>
+        </div>
+        <div class="events-footer">
+          <p id="events-count">Нет событий</p>
+          <button class="button button--secondary" id="load-more" type="button" hidden>Показать ещё</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Edvibe MCP · внутренняя псевдонимная телеметрия · часовой пояс Europe/Moscow</p>
+    </footer>
+  </body>
+</html>

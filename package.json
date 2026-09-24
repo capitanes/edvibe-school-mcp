@@ -14,10 +14,12 @@
     "build:contract": "node scripts/generate-manifest.cjs && node scripts/normalize.cjs",
     "postman": "node scripts/generate-postman-collection.cjs",
     "validate": "node scripts/validate.cjs",
-    "ci": "node scripts/validate.cjs",
+    "test": "node --test",
+    "ci": "node scripts/validate.cjs && node --test",
     "start": "node src/index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "better-sqlite3": "12.11.1"
   }
 }

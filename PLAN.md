@@ -128,12 +128,16 @@ updated: 2026-08-22
 - Для STDIO читать key/domain из локальной конфигурации клиента.
 - Для Streamable HTTP принимать Bearer key и `X-Edvibe-School-Domain`, затем переводить авторизацию в raw upstream header.
 - Реализовать строгую hostname-валидацию, HTTPS-only, запрет redirects, IP/range checks и защиту от DNS rebinding.
-- До передачи `Authorization` проверять домен по Edvibe-controlled tenant registry/allowlist; для личного пилота разрешить только явный hostname тестовой школы.
+- До передачи `Authorization` проверять домен по Edvibe-controlled tenant registry/allowlist; это отдельная security-задача и не входит в изменение телеметрии.
 - Ограничить путь upstream фиксированным `/school-api`.
 - Ввести per-key rate limit 10 rps и максимум 4 concurrent requests.
 - Разрешить ограниченный retry только для read-only `429`/temporary `5xx`.
 - Преобразовывать `BaseResponse.isSuccess=false` в MCP error даже при HTTP 200.
 - Удалять `errorStackTrace`, credentials и PII из ошибок/логов.
+- Добавить опциональную HTTP-телеметрию со строгой allowlist-схемой, HMAC-псевдонимами, фиксированными error codes и fail-open SQLite-очередью; SQLite, journald и аналитические запросы вынести в отдельный worker thread; STDIO и исходные пользовательские вопросы не собирать.
+- Хранить HMAC-секрет и пароль закрытого дашборда только через systemd `LoadCredential`; ротацию HMAC сопровождать увеличением `TELEMETRY_IDENTITY_EPOCH`.
+- Ограничить детали максимумом 90 дней, а агрегаты без request ID и identity — максимумом 365 дней; добавить ежедневный retention, incremental vacuum и не более семи локальных backup, очищаемых по тем же временным границам.
+- Добавить закрытый русскоязычный read-only дашборд `/admin/analytics` с Basic Auth, CSP, `no-store`, фильтрами и московской временной сеткой.
 - Проставить annotation-матрицу по manifest: 35 read (`readOnlyHint=true`), 24 ordinary writes (`readOnlyHint=false`, `destructiveHint=false`), 17 high-risk (`readOnlyHint=false`, `destructiveHint=true`), 2 sensitive (`readOnlyHint=false`, `destructiveHint=false` + explicit warning/per-tool approval).
 - Для upstream-tools задать `openWorldHint=true`; `idempotentHint` указывать только после проверки фактического поведения, иначе оставлять `false`.
 - Добавить health/readiness endpoints, graceful shutdown и Docker image без root-пользователя.
@@ -171,10 +175,20 @@ updated: 2026-08-22
 - MCP-сервер запускается как systemd-сервис `edvibe-mcp.service` на порту 9000, от имени непривилегированного пользователя;
 - авторизация доступа — вариант A (см. `CONTEXT.md` → «Авторизация доступа к HTTP-endpoint»): без отдельного access-токена, единственный ключ — `EDVIBE_API_KEY`, который клиент передаёт в `Authorization: Bearer <key>`; MCP-сервер снимает `Bearer ` и использует его же для upstream-вызова к Edvibe;
 - `X-Edvibe-School-Domain: <hostname>` передаётся клиентом в каждом запросе — без него сервер не знает, к какому домену школы обращаться upstream;
+- опциональный `X-Edvibe-Client-Id: <UUID v4>` задаётся один раз на установку клиента; старые конфиги продолжают работать, raw UUID не сохраняется;
 - `/healthz` endpoint для проверок NPM/systemd (не раскрывает конфигурацию);
-- секреты не хранятся на сервере: ни в `.env`, ни в systemd unit, ни в коде. Ключ и домен приходят в каждом запросе от клиента.
+- API-ключ школы, raw-домен и UUID не сохраняются на сервере. Служебные HMAC-секрет и пароль дашборда существуют только как systemd credentials, не в `.env`, unit-файле, командной строке, Git или журнале.
 
 Стенд используется только для личного пилота Руслана и не публикуется. После официальной передачи Edvibe (Gate C/D) стенд сворачивается или заменяется на `mcp-staging.edvibe.com`.
+
+### Безопасная последовательность включения телеметрии
+
+1. Локально завершить `npm run ci` и canary-проверки отсутствия секретов/PII в stderr и SQLite.
+2. До деплоя выполнить только read-only проверку Node.js, systemd unit, свободного места, firewall порта 9000, proxy-логов и политики хранения journald не дольше 90 дней.
+3. Сначала развернуть код с `TELEMETRY_ENABLED=false` и `ANALYTICS_DASHBOARD_ENABLED=false`; проверить `/healthz` и контракт `35 + 24 + 17 + 2 = 78`.
+4. Только после отдельного подтверждения создать private credentials/каталоги, включить функции и выполнить один контролируемый read-only canary-вызов.
+5. Проверить journald, SQLite и дашборд на отсутствие canary-секретов, затем наблюдать 24 часа за задержками, dropped events, ошибками записи и размером БД.
+6. Откат: выключить оба feature flag и перезапустить сервис; накопленная база остаётся закрытой.
 
 ### Результат — этап 5
 
@@ -290,6 +304,8 @@ updated: 2026-08-22
 - API-ключ, login-токен, cookies, request/response body и PII не появляются в логах.
 - Две параллельные сессии разных школ не смешивают домен, ключ, rate limit или ответы.
 - После завершения запроса credential context освобождается.
+- Canary-значения в API-ключе, домене, PII, arguments, login-токене, пароле и upstream stack/body отсутствуют и в stderr, и в SQLite.
+- HMAC/identity epoch/UUID, tenant-scoped installation IDs и нормализация Cursor/Codex/Devin покрыты тестами.
 
 ### Клиенты
 
@@ -303,6 +319,8 @@ updated: 2026-08-22
 - Graceful shutdown не обрывает незавершённые запросы неконтролируемо.
 - Метрики не содержат key/domain/PII.
 - Проверены rollback, отключение отдельного tool и откат версии контейнера.
+- Проверены dashboard 401/успешный вход, GET-only, фильтры, drill-down, XSS/SQL injection, граница сессии 30 минут, UTC→Europe/Moscow, retention и годовые анонимные агрегаты.
+- Постановка события не делает SQLite-запись синхронно в критическом пути; целевой p95 enqueue — не более 2 мс; сбой/переполнение хранилища не меняет MCP-ответ.
 
 ## Definition of done публичной версии
 

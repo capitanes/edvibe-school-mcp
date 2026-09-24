@@ -1,17 +1,19 @@
 # Edvibe School MCP
 
-> **Status: experimental / unofficial.** This repository is a private pilot by Ruslan Sungurov. It is **not** an official Edvibe product yet. Do not deploy, publish, or connect to live schools without explicit approval from Ruslan and Edvibe. See `PLAN.md` for approval gates A–F.
+> **Status: experimental / unofficial.** This is Ruslan Sungurov's private pilot, not an official Edvibe product. Do not deploy, publish, enable telemetry, or connect live schools without the approvals described in `PLAN.md`.
 
-A stateless [Model Context Protocol](https://modelcontextprotocol.io) server over the official [Edvibe School API](https://edvibe.com/school-api/swagger/index.html). The v1 audience is Edvibe/ProgressMe schools on the **Pro** plan where the API module is available. MCP cannot open the API on plans without it; broader availability is a product decision for Edvibe.
+A stateless [Model Context Protocol](https://modelcontextprotocol.io) server over the official Edvibe School API. The v1 audience is Edvibe/ProgressMe schools on the **Pro** plan where the School API module is available.
 
-## What exists right now
+## Current state
 
-- Immutable upstream OpenAPI snapshot (`openapi/snapshots/swagger-2026-08-22.json`) with SHA-256 `68342121d2fd…`.
-- Authoritative operation manifest (`manifest/operations.json`) with all **78** operations, stable English `operationId`, risk class, and MCP tool annotations.
-- Normalized MCP-oriented OpenAPI copy (`openapi/normalized/edvibe-school-api.normalized.json`) generated from the snapshot + manifest.
-- CI validator (`scripts/validate.js`) that enforces the 78-operation contract, the `35 + 24 + 17 + 2` risk classification, snapshot/manifest/normalized parity, annotation matrix, immutability, and a secret scan.
+- The MCP contract contains exactly **78 tools**: `35 read + 24 write + 17 high-risk + 2 sensitive`.
+- Local STDIO and stateless Streamable HTTP transports are implemented.
+- The private HTTP pilot is currently served at `https://edvibe.sungurov.com/mcp`.
+- A privacy-bounded HTTP telemetry pipeline and Russian internal dashboard are implemented locally.
+- Telemetry and `/admin/analytics` are **disabled by default and have not been enabled on the pilot server**. Deployment and activation require separate approval.
+- Central telemetry intentionally excludes STDIO and never receives the user's original prompt.
 
-What does **not** exist yet: Postman collection, MCP server code, deployment, public listing. Those are later stages in `PLAN.md`.
+The public tool names, arguments and responses remain unchanged. `LoginPupil` and `LoginTeacher` remain in the 78-tool contract; their actual public disablement and a tenant allowlist are separate security tasks.
 
 ## Contract at a glance
 
@@ -23,61 +25,133 @@ What does **not** exist yet: Postman collection, MCP server code, deployment, pu
 | sensitive | 2 | Returns a login token | `false` | `false` + explicit warning |
 | **Total** | **78** | | | |
 
-Risk is determined by actual operation semantics, not by HTTP method. Notably, `GET /api/Marathon/AddMarathonNewStudents` mutates state and is classified as `write`; eight read-only operations use `POST`.
+Risk is determined by operation semantics, not only by the HTTP method.
 
-## Repository layout
+## HTTP connection
 
-```
-openapi/
-  snapshots/            # immutable upstream OpenAPI (never edit)
-  normalized/           # generated MCP-oriented copy (never edit by hand)
-manifest/
-  operations.json       # generated authoritative inventory (never edit by hand)
-scripts/
-  risk-classification.js  # human-authored risk map (single input)
-  operation-meta.js       # human-authored English descriptions + warnings
-  generate-manifest.js    # snapshot + risk map -> manifest/operations.json
-  normalize.js            # snapshot + manifest -> normalized spec
-  validate.js             # CI checks
-.github/workflows/
-  contract.yml           # regenerates + validates + fails if artifacts stale
-README.md  CONTEXT.md  PLAN.md  AGENTS.md  package.json
-```
+`POST /mcp` requires two headers and accepts a third optional header:
+
+| Header | Value |
+|---|---|
+| `Authorization` | `Bearer <EDVIBE_API_KEY>` |
+| `X-Edvibe-School-Domain` | Bare school hostname |
+| `X-Edvibe-Client-Id` | Optional persistent UUID v4 for this client installation |
+
+Old configurations without `X-Edvibe-Client-Id` continue to work. Invalid IDs are ignored. A valid ID enables installation coverage and anonymous scenario metrics; the raw UUID is never persisted.
+
+`GET /healthz` remains unauthenticated and is excluded from product metrics. All other non-MCP paths return a generic error, except the separately protected analytics routes when enabled.
 
 ## Local workflow
 
 Requirements: Node.js 20+.
 
 ```bash
-npm run build:contract   # generate manifest + normalized spec
-npm run validate         # run all CI checks
+npm ci
+npm run ci
 ```
 
-Never edit files under `openapi/snapshots/`, `openapi/normalized/`, or `manifest/`. Change `scripts/risk-classification.js` or `scripts/operation-meta.js` and rerun `npm run build:contract`.
+`npm run ci` runs both the immutable 78-tool contract validator and the `node:test` runtime/privacy suite.
 
-## Security posture (v1)
+Run STDIO (no centralized telemetry):
 
-- Stateless server: no global mutable key/domain. Credential context is request/session-scoped.
-- API key is never returned in tool results, logs, fixtures, examples, or cache.
-- `errorStackTrace` is stripped from all client-facing errors.
-- `HTTP 200` with `BaseResponse.isSuccess=false` is treated as an MCP error.
-- School domain is validated against an Edvibe-controlled allowlist before any upstream call; for the private pilot, only an explicit test-school hostname is allowed.
-- HTTPS only, port 443, fixed upstream path `/school-api`, no redirects, no IP literals, no private/reserved targets, DNS rebinding protection.
-- Internal rate limit: 10 rps per key (below the upstream 15 rps), max 4 concurrent requests per key.
-- No automatic retry for writes/high-risk/sensitive operations.
-- `LoginPupil` and `LoginTeacher` stay in the 78-tool contract but are disabled on the public endpoint until a recorded product/security approval (Gate F).
+```bash
+MCP_TRANSPORT=stdio node src/index.js
+```
 
-## Approval gates
+Run HTTP locally with telemetry and analytics disabled:
 
-Public Postman, live writes, repository transfer, deployment, publication, and public enablement of login tools each require explicit approval from Ruslan. See `PLAN.md` → "Approval gates".
+```bash
+MCP_TRANSPORT=http TELEMETRY_ENABLED=false ANALYTICS_DASHBOARD_ENABLED=false node src/index.js
+```
 
-## Supported clients (v1)
+Credentials for School API access come from the MCP client configuration. Never put real API keys in Git, examples, test fixtures or shell command history.
 
-- Local Cursor (auto-run off).
-- Local Codex (`default_tools_approval_mode = "writes"`; high-risk/sensitive tools per-tool `approval_mode = "prompt"`).
+## Safe HTTP telemetry
 
-Cursor Cloud, Cursor auto-run, and ChatGPT are **not** supported in v1.
+The telemetry API accepts only a strict event schema:
 
-## Origin
+- `service_started`
+- `mcp_initialize_completed`
+- `mcp_request_rejected`
+- `tool_call_completed`
+- `service_stopped`
+- `telemetry_storage_degraded`
 
-This repository was seeded from the Edvibe MCP handoff package in the ProgressMe Obsidian vault (`Instruments/Edvibe MCP/`). `CONTEXT.md`, `PLAN.md`, and `AGENTS.md` are the project context, plan, and agent instructions respectively.
+Allowed data is limited to UTC time, a server request ID, transport, HMAC pseudonyms, normalized client family/version, MCP method, tool/group/risk, outcome, a fixed safe error code, upstream status and numeric timings.
+
+The logger rejects headers, IP/User-Agent, URLs/query strings, arguments/results, bodies, API keys, raw domains, raw UUIDs, tokens, passwords, JSON-RPC body/ID, arbitrary error messages, stacks and unknown fields.
+
+School and installation identities use HMAC-SHA256; installation identities are tenant-scoped. The HMAC key and dashboard password are read only from systemd `LoadCredential` files:
+
+- `telemetry_hmac_key`
+- `analytics_password`
+
+Do not store these values in `.env`, the unit file, process arguments, Git or logs. Increment `TELEMETRY_IDENTITY_EPOCH` whenever the HMAC key is rotated.
+
+### Storage
+
+- SQLite: `/var/lib/edvibe-mcp/telemetry.sqlite` by default.
+- WAL, prepared statements, `busy_timeout`, private `0700` directories and `0600` files.
+- A bounded asynchronous queue accepts events on the HTTP thread; SQLite, journald and dashboard queries run in a dedicated worker thread. Storage failure never changes an MCP response.
+- Detailed events use a hard 90-day maximum. Identity-free hourly/daily aggregates use a hard 365-day maximum; cleanup runs daily.
+- Daily retention, incremental vacuum and at most seven local backups. Retained backup databases are pruned to the same detail/aggregate cutoffs.
+- The same allow-listed events are written as one JSON line to stderr/journald. Journald is not the annual analytics source; activation must verify a host journald retention policy no longer than 90 days.
+
+### Dashboard
+
+When separately enabled, the Russian internal dashboard is available at `GET /admin/analytics`. It uses Basic Auth with the fixed username `analytics` and a password from the systemd credential. Its API is read-only:
+
+- `GET /admin/analytics/api/dashboard`
+- `GET /admin/analytics/api/events`
+
+Responses use `Cache-Control: no-store`, a restrictive CSP, frame denial and no external scripts. HTTPS forwarded by a proxy is trusted only from loopback/private proxy addresses, so port 9000 must remain firewalled from public access. Time is stored in UTC and displayed in `Europe/Moscow`. Identity drill-down is limited to the 90-day detail window; annual analytics uses identity-free aggregates.
+
+The relevant non-secret flags are:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `TELEMETRY_ENABLED` | `false` | Collect safe HTTP events |
+| `ANALYTICS_DASHBOARD_ENABLED` | `false` | Serve the protected dashboard/API |
+| `TELEMETRY_IDENTITY_EPOCH` | `1` | Pseudonym generation epoch |
+| `TELEMETRY_DATABASE_PATH` | `/var/lib/edvibe-mcp/telemetry.sqlite` | SQLite path |
+| `TELEMETRY_BACKUP_DIRECTORY` | `/var/lib/edvibe-mcp/backups` | Local backup directory |
+
+See `deploy/systemd/telemetry.conf.example`. The example intentionally keeps both feature flags off and the `LoadCredential`/`StateDirectory` directives commented for the first rollout. Provision the private state directory and credential files, then uncomment those directives only during the separately approved activation stage.
+
+## Security status
+
+Implemented in this change:
+
+- fixed safe error taxonomy; no raw upstream body in exceptions;
+- process-keyed HMAC identifiers in the rate-limiter registry instead of raw API keys;
+- bounded limiter/DNS registries with expiry;
+- public-address DNS validation with the validated IPv4 result pinned into the upstream connection, plus a bounded response body;
+- strict telemetry allowlist and fail-open storage;
+- pseudonymous analytics and protected read-only UI.
+
+Still separate from this change:
+
+- an Edvibe-controlled tenant/White Label allowlist before sending `Authorization` upstream;
+- actual public disablement of `LoginPupil` and `LoginTeacher` until product/security approval.
+
+## Repository layout
+
+```text
+manifest/                 authoritative 78-operation inventory
+openapi/                  immutable snapshot and generated normalized copy
+scripts/                  contract generation, validation and deployment helper
+src/                      MCP transports, upstream client and telemetry runtime
+src/telemetry/            schema, identities, bounded queue, worker-thread SQLite store and queries
+test/                     node:test runtime and privacy checks
+web/                      landing page and self-contained analytics UI
+deploy/systemd/           non-secret systemd drop-in example
+README.md CONTEXT.md PLAN.md AGENTS.md
+```
+
+Generated OpenAPI and manifest files must not be edited manually. See `CONTEXT.md` for decisions, `PLAN.md` for rollout gates and `AGENTS.md` for repository rules.
+
+## Rollout boundary
+
+The safe sequence is: deploy code with both flags `false`; verify `/healthz` and the 78-tool contract; inspect Node/systemd/disk/firewall/proxy logging read-only; only after separate approval provision credentials and private directories, enable collection, run one controlled read-only canary and observe it for 24 hours.
+
+Rollback is to set both feature flags to `false` and restart the service. The MCP continues to work and the existing database remains private. This repository change does not itself commit, push or deploy anything.

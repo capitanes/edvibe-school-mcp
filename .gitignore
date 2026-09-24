@@ -1,9 +1,13 @@
 # Dependencies
 node_modules/
 
-# Logs
+# Logs and local telemetry data
 *.log
 logs/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+backups/
 
 # Local environment and secrets — NEVER commit
 .env

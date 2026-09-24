@@ -1,26 +1,28 @@
 // Upstream HTTP client for Edvibe School API.
-//
-// Security features:
-//   - Hostname validation (HTTPS only, no IP literals, no private ranges)
-//   - Per-key rate limiting (10 rps, max 4 concurrent per API key)
-//   - BaseResponse.isSuccess=false → error
-//   - errorStackTrace stripped from all responses
-//   - No redirects followed
-//   - Fixed base path /school-api
-//   - HTTP keep-alive for connection reuse
-//   - DNS resolution cache (per hostname, 60s TTL)
+// Raw credentials, domains, URL/query values and response bodies never cross
+// the telemetry boundary.
 
-import https from "https";
-import { URL } from "url";
-import dns from "dns/promises";
+import { createHmac, randomBytes } from "node:crypto";
+import dns from "node:dns/promises";
+import https from "node:https";
+import { performance } from "node:perf_hooks";
+import { URL } from "node:url";
+import {
+  SafeMcpError,
+  createSafeError,
+  upstreamStatusToErrorCode,
+} from "./telemetry/errors.js";
 
 const BASE_PATH = "/school-api";
 const RATE_LIMIT_RPS = 10;
 const MAX_CONCURRENT = 4;
-const REQUEST_TIMEOUT_MS = 30000;
+const REQUEST_TIMEOUT_MS = 30_000;
+const MAX_UPSTREAM_RESPONSE_BYTES = 5 * 1024 * 1024;
 const DNS_CACHE_TTL_MS = 60_000;
+const DNS_CACHE_MAX_ENTRIES = 1_000;
+const LIMITER_IDLE_TTL_MS = 10 * 60_000;
+const LIMITER_MAX_ENTRIES = 10_000;
 
-// Shared keep-alive agent: reuses TCP+TLS connections to upstream.
 const httpsAgent = new https.Agent({
   keepAlive: true,
   maxSockets: 100,
@@ -28,129 +30,181 @@ const httpsAgent = new https.Agent({
   timeout: REQUEST_TIMEOUT_MS,
 });
 
-// --- Per-key rate limiter registry ---
-
+// The process-random key keeps raw API keys out of the limiter registry. It is
+// intentionally not stable across restarts and is never persisted or logged.
+const limiterHashKey = randomBytes(32);
 const limiterRegistry = new Map();
+let overflowLimiter = null;
 
-/**
- * Get or create a RateLimiter for a given API key.
- * Each school (key) gets its own limiter, so schools don't block each other.
- * @param {string} apiKey
- * @returns {RateLimiter}
- */
-export function getLimiter(apiKey) {
-  let limiter = limiterRegistry.get(apiKey);
-  if (!limiter) {
-    limiter = new RateLimiter();
-    limiterRegistry.set(apiKey, limiter);
-  }
-  return limiter;
+function limiterKey(apiKey) {
+  return createHmac("sha256", limiterHashKey)
+    .update("edvibe-rate-limit:v1:")
+    .update(apiKey)
+    .digest("base64url");
 }
 
-// --- Hostname validation ---
+function pruneLimiterRegistry(now = Date.now()) {
+  for (const [key, entry] of limiterRegistry) {
+    if (entry.limiter.concurrent === 0 && now - entry.lastSeenAt > LIMITER_IDLE_TTL_MS) {
+      limiterRegistry.delete(key);
+    }
+  }
+  if (limiterRegistry.size < LIMITER_MAX_ENTRIES) return;
+  const removable = [...limiterRegistry.entries()]
+    .filter(([, entry]) => entry.limiter.concurrent === 0)
+    .sort((left, right) => left[1].lastSeenAt - right[1].lastSeenAt);
+  for (const [key] of removable) {
+    limiterRegistry.delete(key);
+    if (limiterRegistry.size < LIMITER_MAX_ENTRIES) break;
+  }
+}
 
-const PRIVATE_IP_PATTERNS = [
-  /^127\./, // loopback
-  /^10\./, // private
-  /^172\.(1[6-9]|2[0-9]|3[01])\./, // private
-  /^192\.168\./, // private
-  /^169\.254\./, // link-local
-  /^0\./, // current network
-  /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./, // CGNAT
-];
+/** Return a per-credential limiter without retaining the raw API key. */
+export function getLimiter(apiKey) {
+  const now = Date.now();
+  pruneLimiterRegistry(now);
+  const key = limiterKey(apiKey);
+  let entry = limiterRegistry.get(key);
+  if (!entry) {
+    if (limiterRegistry.size >= LIMITER_MAX_ENTRIES) {
+      // A bounded fallback prevents attacker-controlled keys from growing the
+      // registry without limit while preserving fail-safe rate limiting.
+      overflowLimiter ??= new RateLimiter();
+      return overflowLimiter;
+    }
+    entry = { limiter: new RateLimiter(), lastSeenAt: now };
+    limiterRegistry.set(key, entry);
+  }
+  entry.lastSeenAt = now;
+  return entry.limiter;
+}
 
-const RESERVED_HOSTNAMES = ["localhost", "0.0.0.0", "::1", "[::1]"];
+const RESERVED_HOSTNAMES = new Set(["localhost", "0.0.0.0", "::1", "[::1]"]);
 
 function isIPLiteral(hostname) {
   return /^\d+\.\d+\.\d+\.\d+$/.test(hostname) || hostname.startsWith("[");
 }
 
 function isPrivateIP(ip) {
-  return PRIVATE_IP_PATTERNS.some((p) => p.test(ip));
+  const octets = typeof ip === "string" ? ip.split(".").map(Number) : [];
+  if (octets.length !== 4 || octets.some((value) => !Number.isInteger(value) || value < 0 || value > 255)) {
+    return true;
+  }
+  const [a, b, c] = octets;
+  return (
+    a === 0 || a === 10 || a === 127 || a >= 224 ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 0 && (c === 0 || c === 2)) ||
+    (a === 192 && b === 88 && c === 99) ||
+    (a === 192 && b === 168) ||
+    (a === 198 && (b === 18 || b === 19)) ||
+    (a === 198 && b === 51 && c === 100) ||
+    (a === 203 && b === 0 && c === 113)
+  );
 }
-
-// --- DNS resolution cache ---
 
 const dnsCache = new Map();
 
-/**
- * Cached DNS resolution with TTL.
- * Prevents redundant DNS lookups on every request while still protecting
- * against DNS rebinding (cache entry expires after DNS_CACHE_TTL_MS).
- * @param {string} hostname
- * @returns {Promise<string[]>}
- */
-async function resolveHostname(hostname) {
-  const cached = dnsCache.get(hostname);
-  if (cached && Date.now() - cached.timestamp < DNS_CACHE_TTL_MS) {
-    return cached.addrs;
+function pruneDnsCache(now = Date.now()) {
+  for (const [hostname, entry] of dnsCache) {
+    if (now - entry.timestamp >= DNS_CACHE_TTL_MS) dnsCache.delete(hostname);
   }
+  while (dnsCache.size >= DNS_CACHE_MAX_ENTRIES) {
+    const oldestKey = dnsCache.keys().next().value;
+    if (oldestKey === undefined) break;
+    dnsCache.delete(oldestKey);
+  }
+}
+
+async function resolveHostname(hostname) {
+  const now = Date.now();
+  const cached = dnsCache.get(hostname);
+  if (cached && now - cached.timestamp < DNS_CACHE_TTL_MS) return cached.addrs;
+  pruneDnsCache(now);
   const addrs = await dns.resolve4(hostname);
-  dnsCache.set(hostname, { addrs, timestamp: Date.now() });
+  dnsCache.set(hostname, { addrs, timestamp: now });
   return addrs;
 }
 
-/**
- * Validate and canonicalize a school domain hostname.
- * Returns the canonical hostname or throws on validation failure.
- */
-export async function validateHostname(hostname) {
+function normalizeHostname(hostname) {
   if (!hostname || typeof hostname !== "string") {
-    throw new Error("School domain is required.");
+    throw createSafeError("missing_school_domain");
   }
-  let h = hostname.trim().toLowerCase();
-
-  // Strip any scheme, path, port, query, fragment
-  if (h.includes("://") || h.includes("/") || h.includes(":") || h.includes("?") || h.includes("#")) {
-    throw new Error(`Invalid hostname: must be a bare hostname without scheme, path, port, or query. Got: ${hostname}`);
+  const normalized = hostname.trim().toLowerCase().replace(/\.$/, "");
+  if (
+    normalized.length < 1 ||
+    normalized.length > 253 ||
+    normalized.includes("://") ||
+    /[\/:?#@\s]/.test(normalized)
+  ) {
+    throw createSafeError("invalid_school_domain");
   }
-
-  if (RESERVED_HOSTNAMES.includes(h)) {
-    throw new Error(`Reserved hostname blocked: ${h}`);
+  if (RESERVED_HOSTNAMES.has(normalized) || isIPLiteral(normalized)) {
+    throw createSafeError("unsupported_school_domain");
   }
-
-  if (isIPLiteral(h)) {
-    throw new Error(`IP literal blocked: ${h}. Use a hostname only.`);
-  }
-
-  // DNS resolution check (protects against DNS rebinding and private IPs)
-  let addrs;
-  try {
-    addrs = await resolveHostname(h);
-  } catch (e) {
-    throw new Error(`DNS resolution failed for ${h}: ${e.message}`);
-  }
-  for (const addr of addrs) {
-    if (isPrivateIP(addr)) {
-      throw new Error(`Private/reserved IP blocked for ${h}: ${addr}`);
-    }
-  }
-
-  return h;
+  return normalized;
 }
 
-// --- Rate limiter (per credential context) ---
+/** Resolve and validate a bare public hostname without echoing it into errors. */
+export async function resolveValidatedHostname(hostname) {
+  const normalized = normalizeHostname(hostname);
 
-class RateLimiter {
+  let addrs;
+  try {
+    addrs = await resolveHostname(normalized);
+  } catch {
+    throw createSafeError("domain_resolution_failed");
+  }
+  if (!Array.isArray(addrs) || addrs.length === 0 || addrs.some(isPrivateIP)) {
+    throw createSafeError("unsupported_school_domain");
+  }
+  return Object.freeze({
+    hostname: normalized,
+    addresses: Object.freeze([...new Set(addrs)]),
+    resolvedAt: Date.now(),
+  });
+}
+
+/** Validate a hostname while keeping the legacy string return shape. */
+export async function validateHostname(hostname) {
+  return (await resolveValidatedHostname(hostname)).hostname;
+}
+
+function createPinnedLookup(address) {
+  return (_hostname, options, callback) => {
+    if (options?.all) callback(null, [{ address, family: 4 }]);
+    else callback(null, address, 4);
+  };
+}
+
+async function upstreamResolution(ctx) {
+  const hostname = normalizeHostname(ctx.schoolDomain);
+  if (Array.isArray(ctx.resolvedAddresses) && ctx.resolvedAddresses.length > 0) {
+    if (ctx.resolvedAddresses.some(isPrivateIP)) throw createSafeError("unsupported_school_domain");
+    return { hostname, addresses: [...new Set(ctx.resolvedAddresses)] };
+  }
+  return resolveValidatedHostname(hostname);
+}
+
+export class RateLimiter {
   constructor() {
     this.timestamps = [];
     this.concurrent = 0;
   }
 
   async acquire() {
-    // Wait for a concurrency slot
-    while (this.concurrent >= MAX_CONCURRENT) {
-      await sleep(50);
-    }
-    // Wait for rate limit window
-    const now = Date.now();
-    this.timestamps = this.timestamps.filter((t) => now - t < 1000);
+    const started = performance.now();
+    while (this.concurrent >= MAX_CONCURRENT) await sleep(50);
+    this.timestamps = this.timestamps.filter((timestamp) => Date.now() - timestamp < 1_000);
     while (this.timestamps.length >= RATE_LIMIT_RPS) {
       await sleep(50);
-      this.timestamps = this.timestamps.filter((t) => Date.now() - t < 1000);
+      this.timestamps = this.timestamps.filter((timestamp) => Date.now() - timestamp < 1_000);
     }
     this.timestamps.push(Date.now());
-    this.concurrent++;
+    this.concurrent += 1;
+    return performance.now() - started;
   }
 
   release() {
@@ -159,111 +213,105 @@ class RateLimiter {
 }
 
 function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// --- HTTP request ---
-
 /**
- * Make an upstream request to Edvibe School API.
- *
- * @param {object} ctx - Credential context { apiKey, schoolDomain }
- * @param {string} method - HTTP method
- * @param {string} apiPath - API path starting with /api/
- * @param {object} options - { queryParams, body }
- * @returns {Promise<object>} - Parsed JSON response (BaseResponse)
+ * Call Edvibe School API. Optional `metrics` is mutated only with safe numeric
+ * timing/status fields and may be emitted by the tool telemetry handler.
  */
 export async function callUpstream(ctx, method, apiPath, options = {}) {
-  if (!ctx?.apiKey) throw new Error("Missing API key in credential context.");
-  if (!ctx?.schoolDomain) throw new Error("Missing school domain in credential context.");
+  if (!ctx?.apiKey) throw createSafeError("missing_authorization");
+  if (!ctx?.schoolDomain) throw createSafeError("missing_school_domain");
+  const resolution = await upstreamResolution(ctx);
 
-  // Per-key rate limiter: each school gets its own 10 rps / 4 concurrent.
+  const metrics = options.metrics && typeof options.metrics === "object" ? options.metrics : {};
   const limiter = getLimiter(ctx.apiKey);
-  await limiter.acquire();
+  metrics.limiterWaitMs = await limiter.acquire();
+  const started = performance.now();
 
   try {
     const fullPath = `${BASE_PATH}${apiPath}`;
-    const url = new URL(`https://${ctx.schoolDomain}${fullPath}`);
-
-    // Add query parameters
-    if (options.queryParams) {
-      for (const [key, value] of Object.entries(options.queryParams)) {
-        if (value !== undefined && value !== null) {
-          url.searchParams.append(key, String(value));
-        }
-      }
+    const url = new URL(`https://${resolution.hostname}${fullPath}`);
+    for (const [key, value] of Object.entries(options.queryParams || {})) {
+      if (value !== undefined && value !== null) url.searchParams.append(key, String(value));
     }
 
     const requestOptions = {
       method: method.toUpperCase(),
       headers: {
-        Authorization: ctx.apiKey, // raw key, no Bearer prefix
+        Authorization: ctx.apiKey,
         "Content-Type": "application/json",
         Accept: "application/json",
       },
       timeout: REQUEST_TIMEOUT_MS,
-      redirect: "manual", // never follow redirects
-      agent: httpsAgent, // keep-alive: reuse TCP+TLS connections
+      agent: httpsAgent,
+      lookup: createPinnedLookup(resolution.addresses[0]),
     };
 
-    // Always serialize the body when the operation declares one.
-    // Edvibe returns HTTP 400 "A non-empty request body is required" for POST
-    // endpoints whose body schema is an empty object (e.g. BooksGetBooksSchool),
-    // so we must send at least `{}` whenever hasBody is true.
-    let bodyData = undefined;
-    if (options.body !== undefined) {
-      bodyData = JSON.stringify(options.body ?? {});
-    }
-
+    const bodyData = options.body === undefined ? undefined : JSON.stringify(options.body ?? {});
     return await new Promise((resolve, reject) => {
       const req = https.request(url, requestOptions, (res) => {
+        metrics.upstreamStatus = res.statusCode;
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          res.resume?.();
+          reject(createSafeError(upstreamStatusToErrorCode(res.statusCode), { upstreamStatus: res.statusCode }));
+          return;
+        }
         let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => {
-          // Non-2xx HTTP status → error
-          if (res.statusCode < 200 || res.statusCode >= 300) {
-            reject(new Error(`Upstream HTTP ${res.statusCode}: ${truncate(data, 200)}`));
+        let responseBytes = 0;
+        let responseSettled = false;
+        res.on("data", (chunk) => {
+          if (responseSettled) return;
+          responseBytes += Buffer.byteLength(chunk);
+          if (responseBytes > MAX_UPSTREAM_RESPONSE_BYTES) {
+            responseSettled = true;
+            data = "";
+            res.destroy?.();
+            reject(createSafeError("upstream_non_json", { upstreamStatus: res.statusCode }));
             return;
           }
+          data += chunk;
+        });
+        res.on("end", () => {
+          if (responseSettled) return;
+          responseSettled = true;
+
           let parsed;
           try {
             parsed = JSON.parse(data);
-          } catch (e) {
-            reject(new Error(`Upstream returned non-JSON response: ${truncate(data, 200)}`));
+          } catch {
+            reject(createSafeError("upstream_non_json", { upstreamStatus: res.statusCode }));
             return;
           }
-          // BaseResponse: isSuccess=false → error
-          if (parsed && parsed.isSuccess === false) {
-            const msg = parsed.errorMessage || "Unknown upstream error";
-            reject(new Error(`Edvibe API error: ${msg}`));
-            return;
-          }
-          // Strip errorStackTrace from response
-          if (parsed && parsed.errorStackTrace) {
+
+          if (parsed && typeof parsed === "object" && "errorStackTrace" in parsed) {
             delete parsed.errorStackTrace;
+          }
+          if (parsed && parsed.isSuccess === false) {
+            reject(createSafeError("upstream_business_error", { upstreamStatus: res.statusCode }));
+            return;
           }
           resolve(parsed);
         });
       });
 
-      req.on("error", reject);
-      req.on("timeout", () => {
-        req.destroy(new Error(`Upstream request timeout after ${REQUEST_TIMEOUT_MS}ms`));
+      req.on("error", (error) => {
+        reject(error instanceof SafeMcpError ? error : createSafeError("upstream_network"));
       });
-
-      if (bodyData) {
-        req.write(bodyData);
-      }
+      req.on("timeout", () => {
+        req.destroy(createSafeError("upstream_timeout"));
+      });
+      if (bodyData !== undefined) req.write(bodyData);
       req.end();
     });
   } finally {
+    metrics.upstreamDurationMs = performance.now() - started;
     limiter.release();
   }
 }
 
-function truncate(s, max) {
-  if (typeof s !== "string") return "";
-  return s.length > max ? s.slice(0, max) + "..." : s;
+/** Test-only observability without exposing registry keys or hostnames. */
+export function getUpstreamCacheStats() {
+  return Object.freeze({ limiterEntries: limiterRegistry.size, dnsEntries: dnsCache.size });
 }
-
-export { RateLimiter };
